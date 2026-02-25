@@ -10,8 +10,12 @@
 </head>
 <body>
 
-    <!-- Authentication Modal -->
-    <div id="authModal" class="modal">
+    <!-- Check if authenticated, redirect if not -->
+    <script>
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/';
+        }
+    </script>
         <div class="modal-content auth-modal">
             <span class="close-modal">&times;</span>
             <div id="authContainer">
@@ -42,7 +46,7 @@
         </div>
     </div>
 
-    <header class="top-nav">
+
         <div class="nav-left">
             <h1 class="branding">ANGLER ATLAS</h1>
         </div>

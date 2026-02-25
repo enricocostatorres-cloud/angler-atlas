@@ -35,8 +35,13 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'Server is running', timestamp: new Date() });
 });
 
-// Serve frontend
+// Serve frontend - Landing page as default
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/landing.html'));
+});
+
+// Dashboard page for authenticated users
+app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
