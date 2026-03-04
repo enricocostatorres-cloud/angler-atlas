@@ -6,14 +6,13 @@ let userMarkers = [];
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if user is logged in
     if (!isLoggedIn()) {
         showAuthModal();
     } else {
         await initializeApp();
     }
-
     setupEventListeners();
+    initDarkMode();
 });
 
 // Initialize main app
@@ -98,11 +97,14 @@ async function loadFeed(page = 1) {
     }
 }
 
-// Create post card as a DOM element (safe against XSS)
+// Create post card as a DOM element (safe against XSS — all user text via textContent)
 function createPostCard(catchData) {
     const user = catchData.userId;
     const likes = catchData.likes ? catchData.likes.length : 0;
-    const timestamp = new Date(catchData.createdAt).toLocaleDateString();
+    const timestamp = new Date(catchData.createdAt).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'short', day: 'numeric',
+    });
+    const initials = user.username ? user.username.slice(0, 2).toUpperCase() : '??';
 
     const article = document.createElement('article');
     article.className = 'post-card';
@@ -114,16 +116,17 @@ function createPostCard(catchData) {
 
     const avatar = document.createElement('div');
     avatar.className = 'user-avatar';
+    avatar.textContent = initials;
 
     const userInfo = document.createElement('div');
     userInfo.style.flex = '1';
 
-    const usernameEl = document.createElement('span');
+    const usernameEl = document.createElement('div');
     usernameEl.className = 'username';
     usernameEl.textContent = user.username;
 
     const timeEl = document.createElement('div');
-    timeEl.style.cssText = 'font-size: 0.8rem; color: #999;';
+    timeEl.className = 'post-time';
     timeEl.textContent = timestamp;
 
     userInfo.appendChild(usernameEl);
@@ -135,35 +138,46 @@ function createPostCard(catchData) {
     const imgContainer = document.createElement('div');
     imgContainer.className = 'post-image-container';
     const img = document.createElement('img');
-    img.src = `https://placehold.co/600x400/00578a/ffffff?text=${encodeURIComponent(catchData.species)}`;
+    img.src = `https://placehold.co/600x360/002f4b/ffffff?text=${encodeURIComponent(catchData.species)}`;
     img.alt = catchData.species;
     img.className = 'post-image';
+    img.loading = 'lazy';
     imgContainer.appendChild(img);
 
     // Data
     const postData = document.createElement('div');
     postData.className = 'post-data';
 
-    const catchLine = document.createElement('span');
-    let catchText = `Catch: ${catchData.species}`;
-    if (catchData.weight) catchText += ` | Weight: ${catchData.weight} lbs`;
-    if (catchData.length) catchText += ` | Length: ${catchData.length} in`;
-    if (catchData.depth) catchText += ` | Depth: ${catchData.depth} ft`;
-    catchLine.textContent = catchText;
-    postData.appendChild(catchLine);
+    const speciesTag = document.createElement('div');
+    speciesTag.className = 'species-tag';
+    speciesTag.textContent = catchData.species;
+    postData.appendChild(speciesTag);
 
-    postData.appendChild(document.createElement('br'));
+    const detailLine = document.createElement('div');
+    const parts = [];
+    if (catchData.weight) parts.push(`${catchData.weight} lbs`);
+    if (catchData.length) parts.push(`${catchData.length} in`);
+    if (catchData.depth)  parts.push(`${catchData.depth} ft depth`);
+    detailLine.textContent = parts.length ? parts.join(' · ') : '';
+    if (parts.length) postData.appendChild(detailLine);
 
-    const locLine = document.createElement('span');
-    let locText = `Location: ${catchData.location.address || 'GPS Location'}`;
-    if (catchData.lureUsed) locText += ` | Lure: ${catchData.lureUsed}`;
-    locLine.textContent = locText;
+    const locLine = document.createElement('div');
+    locLine.textContent = catchData.location.address
+        ? `📍 ${catchData.location.address}`
+        : '📍 GPS Location';
     postData.appendChild(locLine);
 
+    if (catchData.lureUsed) {
+        const lureEl = document.createElement('div');
+        lureEl.textContent = `🪝 ${catchData.lureUsed}`;
+        postData.appendChild(lureEl);
+    }
+
     if (catchData.releaseInfo?.wasReleased) {
-        postData.appendChild(document.createElement('br'));
-        const releasedEl = document.createElement('strong');
-        releasedEl.textContent = '✓ Released';
+        const releasedEl = document.createElement('div');
+        releasedEl.textContent = '↩ Released';
+        releasedEl.style.color = 'var(--success)';
+        releasedEl.style.fontWeight = '600';
         postData.appendChild(releasedEl);
     }
 
@@ -174,8 +188,7 @@ function createPostCard(catchData) {
     const likeBtn = document.createElement('button');
     likeBtn.className = 'action-btn like-btn';
     likeBtn.dataset.catchId = catchData._id;
-    // Icon is hardcoded markup, not user content
-    likeBtn.innerHTML = '<i class="fa-solid fa-fish"></i> ';
+    likeBtn.innerHTML = '<i class="fa-solid fa-heart"></i>';
     const likeCountEl = document.createElement('span');
     likeCountEl.className = 'like-count';
     likeCountEl.textContent = likes;
@@ -183,7 +196,7 @@ function createPostCard(catchData) {
 
     const shareBtn = document.createElement('button');
     shareBtn.className = 'action-btn share-btn';
-    shareBtn.innerHTML = '<i class="fa-solid fa-anchor"></i> Share';
+    shareBtn.innerHTML = '<i class="fa-solid fa-share-nodes"></i> Share';
 
     const commentBtn = document.createElement('button');
     commentBtn.className = 'action-btn comment-btn';
@@ -208,14 +221,26 @@ async function loadLeaderboard() {
         const leaderboardList = document.getElementById('leaderboardList');
         leaderboardList.innerHTML = '';
 
+        const medals = ['🥇', '🥈', '🥉'];
+
         leaderboard.slice(0, 10).forEach((user, index) => {
             const li = document.createElement('li');
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = `${index + 1}. ${user.username}`;
-            const ptsSpan = document.createElement('span');
-            ptsSpan.textContent = `${user.calculatedPoints || user.points || 0} pts`;
-            li.appendChild(nameSpan);
-            li.appendChild(ptsSpan);
+
+            const rankEl = document.createElement('span');
+            rankEl.className = 'lb-rank';
+            rankEl.textContent = medals[index] || `${index + 1}`;
+
+            const nameEl = document.createElement('span');
+            nameEl.className = 'lb-name';
+            nameEl.textContent = user.username;
+
+            const ptsEl = document.createElement('span');
+            ptsEl.className = 'lb-pts';
+            ptsEl.textContent = `${user.calculatedPoints || user.points || 0} pts`;
+
+            li.appendChild(rankEl);
+            li.appendChild(nameEl);
+            li.appendChild(ptsEl);
             leaderboardList.appendChild(li);
         });
     } catch (error) {
@@ -235,17 +260,16 @@ async function loadGearSpotlight() {
             spotlight.innerHTML = '';
 
             const nameEl = document.createElement('p');
-            const nameStrong = document.createElement('strong');
-            nameStrong.textContent = random.name;
-            nameEl.appendChild(nameStrong);
+            nameEl.className = 'gear-name';
+            nameEl.textContent = random.name;
 
             const priceEl = document.createElement('p');
-            priceEl.style.cssText = 'color: var(--accent-copper); font-weight: bold;';
+            priceEl.className = 'gear-price';
             priceEl.textContent = `$${random.price}`;
 
             const buyBtn = document.createElement('button');
             buyBtn.className = 'purchase-btn';
-            buyBtn.textContent = 'Buy Now';
+            buyBtn.textContent = 'View Deal';
 
             spotlight.appendChild(nameEl);
             spotlight.appendChild(priceEl);
@@ -306,10 +330,9 @@ function setupEventListeners() {
         alert('Profile page coming soon!');
     });
 
-    document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
-        e.preventDefault();
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
         logout();
-        window.location.reload();
+        window.location.href = '/';
     });
 
     // Event delegation for feed actions (like, share)
@@ -482,4 +505,28 @@ async function loadNearbyOnMap() {
     } catch (error) {
         console.error('Error loading nearby catches:', error);
     }
+}
+
+// Dark mode
+function initDarkMode() {
+    const toggle = document.getElementById('darkModeToggle');
+    if (!toggle) return;
+
+    function applyTheme(dark) {
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        toggle.innerHTML = dark
+            ? '<i class="fa-solid fa-sun"></i>'
+            : '<i class="fa-solid fa-moon"></i>';
+        toggle.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+    }
+
+    // Initialise from saved preference
+    const saved = localStorage.getItem('theme');
+    applyTheme(saved === 'dark');
+
+    toggle.addEventListener('click', () => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        applyTheme(!isDark);
+    });
 }
