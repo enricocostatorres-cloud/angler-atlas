@@ -4,51 +4,77 @@ const Catch = require('../models/Catch');
 
 const router = express.Router();
 
-// Get global leaderboard
-router.get('/', async (req, res) => {
+// Get global leaderboard using aggregation pipeline
+router.get('/', async (req, res, next) => {
   try {
-    const timeframe = req.query.timeframe || 'all'; // all, month, week
+    const timeframe = req.query.timeframe || 'all';
     let dateFilter = {};
 
     if (timeframe === 'week') {
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      dateFilter = { createdAt: { $gte: weekAgo } };
+      dateFilter = { createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } };
     } else if (timeframe === 'month') {
-      const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      dateFilter = { createdAt: { $gte: monthAgo } };
+      dateFilter = { createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } };
     }
 
-    // Calculate points based on catches
-    const catches = await Catch.find(dateFilter).populate('userId');
-    const userPoints = {};
+    // Calculate points entirely in MongoDB — avoids loading all catches into memory
+    const leaderboard = await Catch.aggregate([
+      { $match: dateFilter },
+      {
+        $group: {
+          _id: '$userId',
+          catchCount: { $sum: 1 },
+          totalLikes: { $sum: { $size: '$likes' } },
+          totalWeight: { $sum: { $ifNull: ['$weight', 0] } },
+        },
+      },
+      {
+        $addFields: {
+          calculatedPoints: {
+            $add: [
+              { $multiply: ['$catchCount', 100] },
+              { $multiply: ['$totalLikes', 10] },
+              { $multiply: ['$totalWeight', 5] },
+            ],
+          },
+        },
+      },
+      { $sort: { calculatedPoints: -1 } },
+      { $limit: 100 },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 0,
+          userId: '$_id',
+          username: '$user.username',
+          profilePicture: '$user.profilePicture',
+          rank: '$user.rank',
+          points: '$user.points',
+          calculatedPoints: 1,
+        },
+      },
+    ]);
 
-    catches.forEach(catchDoc => {
-      const userId = catchDoc.userId._id;
-      userPoints[userId] = (userPoints[userId] || 0) + 100; // Base points per catch
-      userPoints[userId] += catchDoc.likes.length * 10; // Points per like
-      userPoints[userId] += (catchDoc.weight || 0) * 5; // Points per lb
-    });
-
-    const leaderboard = await User.find()
-      .select('username rank points profilePicture')
-      .sort({ points: -1 })
-      .limit(100);
-
-    // Update points with calculated values
-    const enrichedLeaderboard = leaderboard.map((user, index) => ({
-      rank: index + 1,
-      ...user.toObject(),
-      calculatedPoints: userPoints[user._id] || 0,
+    const enrichedLeaderboard = leaderboard.map((entry, index) => ({
+      ...entry,
+      position: index + 1,
     }));
 
     res.json(enrichedLeaderboard);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 
 // Get user rank
-router.get('/user/:userId', async (req, res) => {
+router.get('/user/:userId', async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId)
       .select('username rank points profilePicture');
@@ -64,7 +90,7 @@ router.get('/user/:userId', async (req, res) => {
       rank: rankAbove + 1,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 

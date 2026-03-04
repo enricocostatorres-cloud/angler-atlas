@@ -33,10 +33,9 @@ async function initializeApp() {
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
                     };
-                    console.log('Location:', userLocation);
                 },
-                (error) => {
-                    console.log('Using default location');
+                () => {
+                    // Fall back to default location silently
                 }
             );
         }
@@ -57,7 +56,7 @@ async function updateUserDashboard(user) {
 
     // Get user's catch count
     const catches = await getUserCatches(user._id);
-    document.getElementById('userCatches').textContent = catches.length;
+    document.getElementById('userCatches').textContent = Array.isArray(catches) ? catches.length : 0;
 }
 
 // Load feed
@@ -72,109 +71,134 @@ async function loadFeed(page = 1) {
 
         if (data.catches && data.catches.length > 0) {
             data.catches.forEach(catchData => {
-                const postHTML = createPostCard(catchData);
-                feedContainer.insertAdjacentHTML('beforeend', postHTML);
+                feedContainer.appendChild(createPostCard(catchData));
             });
 
-            // Update load more button
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            loadMoreBtn.innerHTML = '';
             if (data.pagination.pages > page) {
-                document.getElementById('loadMoreBtn').innerHTML = `
-                    <button class="btn-primary" onclick="loadFeed(${page + 1})">Load More</button>
-                `;
+                const btn = document.createElement('button');
+                btn.className = 'btn-primary';
+                btn.textContent = 'Load More';
+                btn.addEventListener('click', () => loadFeed(page + 1));
+                loadMoreBtn.appendChild(btn);
             } else {
-                document.getElementById('loadMoreBtn').innerHTML = '<p>No more posts</p>';
+                loadMoreBtn.textContent = 'No more posts';
             }
         } else {
             if (page === 1) {
-                feedContainer.innerHTML = '<p style="text-align: center; padding: 2rem;">No catches yet. Be the first to log one!</p>';
+                const msg = document.createElement('p');
+                msg.style.cssText = 'text-align: center; padding: 2rem;';
+                msg.textContent = 'No catches yet. Be the first to log one!';
+                feedContainer.appendChild(msg);
             }
         }
-
-        // Reattach event listeners for new posts
-        attachPostEventListeners();
     } catch (error) {
         console.error('Error loading feed:', error);
     }
 }
 
-// Create post card HTML
+// Create post card as a DOM element (safe against XSS)
 function createPostCard(catchData) {
     const user = catchData.userId;
     const likes = catchData.likes ? catchData.likes.length : 0;
     const timestamp = new Date(catchData.createdAt).toLocaleDateString();
 
-    return `
-        <article class="post-card" data-catch-id="${catchData._id}">
-            <div class="post-header">
-                <div class="user-avatar"></div>
-                <div style="flex: 1;">
-                    <span class="username">${user.username}</span>
-                    <div style="font-size: 0.8rem; color: #999;">${timestamp}</div>
-                </div>
-            </div>
-            <div class="post-image-container">
-                <img src="https://placehold.co/600x400/00578a/ffffff?text=${catchData.species}" 
-                     alt="${catchData.species}" class="post-image">
-            </div>
-            <div class="post-data">
-                <strong>Catch:</strong> ${catchData.species} 
-                ${catchData.weight ? `| <strong>Weight:</strong> ${catchData.weight} lbs` : ''}
-                ${catchData.length ? `| <strong>Length:</strong> ${catchData.length} in` : ''}
-                ${catchData.depth ? `| <strong>Depth:</strong> ${catchData.depth} ft` : ''}
-                <br>
-                <strong>Location:</strong> ${catchData.location.address || 'GPS Location'}
-                ${catchData.lureUsed ? `| <strong>Lure:</strong> ${catchData.lureUsed}` : ''}
-                ${catchData.releaseInfo?.wasReleased ? '<br><strong>✓ Released</strong>' : ''}
-            </div>
-            <div class="post-actions">
-                <button class="action-btn like-btn" data-catch-id="${catchData._id}">
-                    <i class="fa-solid fa-fish"></i> <span class="like-count">${likes}</span>
-                </button>
-                <button class="action-btn share-btn">
-                    <i class="fa-solid fa-anchor"></i> Share
-                </button>
-                <button class="action-btn comment-btn">
-                    <i class="fa-regular fa-comment"></i> Comment
-                </button>
-            </div>
-        </article>
-    `;
-}
+    const article = document.createElement('article');
+    article.className = 'post-card';
+    article.dataset.catchId = catchData._id;
 
-// Attach event listeners to post actions
-function attachPostEventListeners() {
-    // Like buttons
-    document.querySelectorAll('.like-btn').forEach(btn => {
-        btn.removeEventListener('click', handleLike);
-        btn.addEventListener('click', handleLike);
-    });
+    // Header
+    const header = document.createElement('div');
+    header.className = 'post-header';
 
-    // Share buttons
-    document.querySelectorAll('.share-btn').forEach(btn => {
-        btn.removeEventListener('click', handleShare);
-        btn.addEventListener('click', handleShare);
-    });
-}
+    const avatar = document.createElement('div');
+    avatar.className = 'user-avatar';
 
-// Handle like
-async function handleLike(e) {
-    e.preventDefault();
-    const catchId = e.currentTarget.dataset.catchId;
+    const userInfo = document.createElement('div');
+    userInfo.style.flex = '1';
 
-    try {
-        const result = await likeCatch(catchId);
-        const likeCount = e.currentTarget.querySelector('.like-count');
-        likeCount.textContent = result.likes;
-        e.currentTarget.classList.toggle('liked', result.liked);
-    } catch (error) {
-        alert('Error liking catch: ' + error.message);
+    const usernameEl = document.createElement('span');
+    usernameEl.className = 'username';
+    usernameEl.textContent = user.username;
+
+    const timeEl = document.createElement('div');
+    timeEl.style.cssText = 'font-size: 0.8rem; color: #999;';
+    timeEl.textContent = timestamp;
+
+    userInfo.appendChild(usernameEl);
+    userInfo.appendChild(timeEl);
+    header.appendChild(avatar);
+    header.appendChild(userInfo);
+
+    // Image
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'post-image-container';
+    const img = document.createElement('img');
+    img.src = `https://placehold.co/600x400/00578a/ffffff?text=${encodeURIComponent(catchData.species)}`;
+    img.alt = catchData.species;
+    img.className = 'post-image';
+    imgContainer.appendChild(img);
+
+    // Data
+    const postData = document.createElement('div');
+    postData.className = 'post-data';
+
+    const catchLine = document.createElement('span');
+    let catchText = `Catch: ${catchData.species}`;
+    if (catchData.weight) catchText += ` | Weight: ${catchData.weight} lbs`;
+    if (catchData.length) catchText += ` | Length: ${catchData.length} in`;
+    if (catchData.depth) catchText += ` | Depth: ${catchData.depth} ft`;
+    catchLine.textContent = catchText;
+    postData.appendChild(catchLine);
+
+    postData.appendChild(document.createElement('br'));
+
+    const locLine = document.createElement('span');
+    let locText = `Location: ${catchData.location.address || 'GPS Location'}`;
+    if (catchData.lureUsed) locText += ` | Lure: ${catchData.lureUsed}`;
+    locLine.textContent = locText;
+    postData.appendChild(locLine);
+
+    if (catchData.releaseInfo?.wasReleased) {
+        postData.appendChild(document.createElement('br'));
+        const releasedEl = document.createElement('strong');
+        releasedEl.textContent = '✓ Released';
+        postData.appendChild(releasedEl);
     }
-}
 
-// Handle share
-function handleShare(e) {
-    e.preventDefault();
-    alert("🎣 Link copied to clipboard!");
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'post-actions';
+
+    const likeBtn = document.createElement('button');
+    likeBtn.className = 'action-btn like-btn';
+    likeBtn.dataset.catchId = catchData._id;
+    // Icon is hardcoded markup, not user content
+    likeBtn.innerHTML = '<i class="fa-solid fa-fish"></i> ';
+    const likeCountEl = document.createElement('span');
+    likeCountEl.className = 'like-count';
+    likeCountEl.textContent = likes;
+    likeBtn.appendChild(likeCountEl);
+
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'action-btn share-btn';
+    shareBtn.innerHTML = '<i class="fa-solid fa-anchor"></i> Share';
+
+    const commentBtn = document.createElement('button');
+    commentBtn.className = 'action-btn comment-btn';
+    commentBtn.innerHTML = '<i class="fa-regular fa-comment"></i> Comment';
+
+    actions.appendChild(likeBtn);
+    actions.appendChild(shareBtn);
+    actions.appendChild(commentBtn);
+
+    article.appendChild(header);
+    article.appendChild(imgContainer);
+    article.appendChild(postData);
+    article.appendChild(actions);
+
+    return article;
 }
 
 // Load leaderboard
@@ -186,10 +210,12 @@ async function loadLeaderboard() {
 
         leaderboard.slice(0, 10).forEach((user, index) => {
             const li = document.createElement('li');
-            li.innerHTML = `
-                <span>${index + 1}. ${user.username}</span>
-                <span>${user.points || 0} pts</span>
-            `;
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = `${index + 1}. ${user.username}`;
+            const ptsSpan = document.createElement('span');
+            ptsSpan.textContent = `${user.calculatedPoints || user.points || 0} pts`;
+            li.appendChild(nameSpan);
+            li.appendChild(ptsSpan);
             leaderboardList.appendChild(li);
         });
     } catch (error) {
@@ -205,11 +231,25 @@ async function loadGearSpotlight() {
 
         if (result.products && result.products.length > 0) {
             const random = result.products[Math.floor(Math.random() * result.products.length)];
-            spotlight.innerHTML = `
-                <p><strong>${random.name}</strong></p>
-                <p style="color: var(--accent-copper); font-weight: bold;">$${random.price}</p>
-                <button class="purchase-btn">Buy Now</button>
-            `;
+
+            spotlight.innerHTML = '';
+
+            const nameEl = document.createElement('p');
+            const nameStrong = document.createElement('strong');
+            nameStrong.textContent = random.name;
+            nameEl.appendChild(nameStrong);
+
+            const priceEl = document.createElement('p');
+            priceEl.style.cssText = 'color: var(--accent-copper); font-weight: bold;';
+            priceEl.textContent = `$${random.price}`;
+
+            const buyBtn = document.createElement('button');
+            buyBtn.className = 'purchase-btn';
+            buyBtn.textContent = 'Buy Now';
+
+            spotlight.appendChild(nameEl);
+            spotlight.appendChild(priceEl);
+            spotlight.appendChild(buyBtn);
         }
     } catch (error) {
         console.error('Error loading gear spotlight:', error);
@@ -218,10 +258,8 @@ async function loadGearSpotlight() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Modal controls
     const postModal = document.getElementById('postModal');
     const authModal = document.getElementById('authModal');
-    const mapModal = document.getElementById('mapModal');
 
     document.getElementById('openPostModalBtn')?.addEventListener('click', () => {
         if (!isLoggedIn()) {
@@ -270,6 +308,31 @@ function setupEventListeners() {
         e.preventDefault();
         logout();
         window.location.reload();
+    });
+
+    // Event delegation for feed actions (like, share)
+    const feedContainer = document.getElementById('feedContainer');
+    feedContainer?.addEventListener('click', async (e) => {
+        const likeBtn = e.target.closest('.like-btn');
+        const shareBtn = e.target.closest('.share-btn');
+
+        if (likeBtn) {
+            e.preventDefault();
+            const catchId = likeBtn.dataset.catchId;
+            try {
+                const result = await likeCatch(catchId);
+                const likeCountEl = likeBtn.querySelector('.like-count');
+                if (likeCountEl) likeCountEl.textContent = result.likes;
+                likeBtn.classList.toggle('liked', result.liked);
+            } catch (error) {
+                alert('Error liking catch: ' + error.message);
+            }
+        }
+
+        if (shareBtn) {
+            e.preventDefault();
+            alert('🎣 Link copied to clipboard!');
+        }
     });
 }
 
@@ -345,9 +408,9 @@ async function handleRegister(e) {
 // Toggle auth form
 function toggleAuthForm(e) {
     e.preventDefault();
-    document.getElementById('loginForm').style.display = 
+    document.getElementById('loginForm').style.display =
         document.getElementById('loginForm').style.display === 'none' ? 'block' : 'none';
-    document.getElementById('registerForm').style.display = 
+    document.getElementById('registerForm').style.display =
         document.getElementById('registerForm').style.display === 'none' ? 'block' : 'none';
 }
 
@@ -383,6 +446,30 @@ function initializeMap() {
     loadNearbyOnMap();
 }
 
+// Build a safe DOM node for map info windows
+function buildInfoWindowContent(catchData) {
+    const div = document.createElement('div');
+    div.style.color = '#333';
+
+    const speciesEl = document.createElement('strong');
+    speciesEl.textContent = catchData.species;
+    div.appendChild(speciesEl);
+    div.appendChild(document.createElement('br'));
+
+    const byEl = document.createTextNode(`By: ${catchData.userId.username}`);
+    div.appendChild(byEl);
+    div.appendChild(document.createElement('br'));
+
+    if (catchData.weight) {
+        div.appendChild(document.createTextNode(`Weight: ${catchData.weight} lbs`));
+        div.appendChild(document.createElement('br'));
+    }
+
+    div.appendChild(document.createTextNode(new Date(catchData.createdAt).toLocaleDateString()));
+
+    return div;
+}
+
 // Load nearby catches on map
 async function loadNearbyOnMap() {
     try {
@@ -395,24 +482,14 @@ async function loadNearbyOnMap() {
                     lng: catchData.location.coordinates[0],
                 },
                 map: map,
-                title: `${catchData.species} - ${new Date(catchData.createdAt).toLocaleDateString()}`,
+                title: catchData.species,
             });
 
-            // Add info window
             const infoWindow = new google.maps.InfoWindow({
-                content: `
-                    <div style="color: #333;">
-                        <strong>${catchData.species}</strong><br>
-                        By: ${catchData.userId.username}<br>
-                        ${catchData.weight ? `Weight: ${catchData.weight} lbs<br>` : ''}
-                        ${new Date(catchData.createdAt).toLocaleDateString()}
-                    </div>
-                `,
+                content: buildInfoWindowContent(catchData),
             });
 
             marker.addListener('click', () => {
-                // Close all other info windows
-                document.querySelectorAll('.gm-style-iw').forEach(el => el.closest('.gm-style').style.display = 'none');
                 infoWindow.open(map, marker);
             });
         });

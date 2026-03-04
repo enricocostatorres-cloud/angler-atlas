@@ -7,7 +7,7 @@ const verifyToken = (req, res, next) => {
     return res.status(401).json({ error: 'No token provided' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
       return res.status(401).json({ error: 'Invalid token' });
     }
@@ -17,7 +17,7 @@ const verifyToken = (req, res, next) => {
 };
 
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET || 'your-secret-key', {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: '7d',
   });
 };
