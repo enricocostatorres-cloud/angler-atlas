@@ -295,8 +295,10 @@ function setupEventListeners() {
     // Navigation
     document.getElementById('mapLink')?.addEventListener('click', (e) => {
         e.preventDefault();
-        initializeMap();
         document.getElementById('mapModal').classList.add('show');
+        initializeMap();
+        // Leaflet needs the container to be visible before it can calculate tile layout
+        setTimeout(() => map && map.invalidateSize(), 100);
     });
 
     document.getElementById('profileLink')?.addEventListener('click', (e) => {
@@ -419,34 +421,27 @@ function showAuthModal() {
     document.getElementById('authModal').classList.add('show');
 }
 
-// Initialize Google Map
+// Initialize Leaflet map (no API key required — uses OpenStreetMap tiles)
 function initializeMap() {
     if (map) return; // Already initialized
 
-    const mapElement = document.getElementById('map');
-    const mapOptions = {
-        zoom: 12,
-        center: {
-            lat: userLocation.latitude,
-            lng: userLocation.longitude,
-        },
-    };
+    map = L.map('map').setView([userLocation.latitude, userLocation.longitude], 12);
 
-    map = new google.maps.Map(mapElement, mapOptions);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+    }).addTo(map);
 
-    // Add user location marker
-    new google.maps.Marker({
-        position: mapOptions.center,
-        map: map,
-        title: 'Your Location',
-        icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-    });
+    // User location marker
+    L.marker([userLocation.latitude, userLocation.longitude])
+        .addTo(map)
+        .bindPopup('<strong>Your Location</strong>');
 
     // Load nearby catches
     loadNearbyOnMap();
 }
 
-// Escape user-supplied text for safe use inside an HTML string
+// Escape user-supplied text for safe insertion into HTML strings
 function escapeHtml(str) {
     return String(str)
         .replace(/&/g, '&amp;')
@@ -456,16 +451,15 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
-// Build the InfoWindow HTML string — values are HTML-escaped so no XSS risk.
-// Returns a string because google.maps.InfoWindow accepts strings in all API versions.
-function buildInfoWindowContent(catchData) {
+// Build popup HTML — all user values are HTML-escaped to prevent XSS
+function buildPopupContent(catchData) {
     const species = escapeHtml(catchData.species);
     const username = escapeHtml(catchData.userId?.username || 'Unknown');
     const date = new Date(catchData.createdAt).toLocaleDateString();
     const weightLine = catchData.weight
         ? `Weight: ${escapeHtml(String(catchData.weight))} lbs<br>`
         : '';
-    return `<div style="color:#333;min-width:140px;">
+    return `<div style="min-width:140px;">
         <strong>${species}</strong><br>
         By: ${username}<br>
         ${weightLine}
@@ -479,22 +473,11 @@ async function loadNearbyOnMap() {
         const catches = await getNearby(userLocation.longitude, userLocation.latitude);
 
         catches.forEach(catchData => {
-            const marker = new google.maps.Marker({
-                position: {
-                    lat: catchData.location.coordinates[1],
-                    lng: catchData.location.coordinates[0],
-                },
-                map: map,
-                title: catchData.species,
-            });
-
-            const infoWindow = new google.maps.InfoWindow({
-                content: buildInfoWindowContent(catchData),
-            });
-
-            marker.addListener('click', () => {
-                infoWindow.open(map, marker);
-            });
+            const lat = catchData.location.coordinates[1];
+            const lng = catchData.location.coordinates[0];
+            L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup(buildPopupContent(catchData));
         });
     } catch (error) {
         console.error('Error loading nearby catches:', error);
