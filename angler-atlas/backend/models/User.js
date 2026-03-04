@@ -61,6 +61,9 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+// Index for leaderboard sorting
+userSchema.index({ points: -1 });
+
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();

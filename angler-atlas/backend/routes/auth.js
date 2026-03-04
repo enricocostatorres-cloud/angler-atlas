@@ -6,16 +6,15 @@ const validator = require('validator');
 const router = express.Router();
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', async (req, res, next) => {
   try {
     const { username, email, password, confirmPassword } = req.body;
 
-    // Validation
     if (!username || !email || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    if (!validator.isEmail(email)) {
+    if (!validator.isEmail(String(email))) {
       return res.status(400).json({ error: 'Invalid email address' });
     }
 
@@ -23,23 +22,30 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Passwords do not match' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
-    // Check if user already exists
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return res.status(400).json({ error: 'Password must contain at least one uppercase letter and one number' });
+    }
+
+    const trimmedUsername = String(username).trim();
+    if (trimmedUsername.length < 3 || trimmedUsername.length > 30) {
+      return res.status(400).json({ error: 'Username must be between 3 and 30 characters' });
+    }
+
     const existingUser = await User.findOne({
-      $or: [{ email }, { username }],
+      $or: [{ email: String(email).toLowerCase() }, { username: trimmedUsername }],
     });
 
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Create new user
     const user = new User({
-      username,
-      email,
+      username: trimmedUsername,
+      email: String(email).toLowerCase(),
       password,
     });
 
@@ -52,12 +58,12 @@ router.post('/register', async (req, res) => {
       user: user.toJSON(),
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -65,7 +71,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: String(email).toLowerCase() });
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -85,7 +91,7 @@ router.post('/login', async (req, res) => {
       user: user.toJSON(),
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 

@@ -74,5 +74,8 @@ const catchSchema = new mongoose.Schema({
 
 // Geospatial index for location-based queries
 catchSchema.index({ 'location.coordinates': '2dsphere' });
+// Indexes for feed and user catch queries
+catchSchema.index({ userId: 1, createdAt: -1 });
+catchSchema.index({ visibility: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Catch', catchSchema);
