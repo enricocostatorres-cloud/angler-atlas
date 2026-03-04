@@ -1,212 +1,187 @@
-// Check if user is already logged in
+// Redirect authenticated users straight to the app
 document.addEventListener('DOMContentLoaded', () => {
     if (isLoggedIn()) {
-        // Redirect to dashboard
-        window.location.href = 'index.html';
+        window.location.href = '/dashboard';
+        return;
     }
-
-    // Setup event listeners
     setupEventListeners();
+    initHamburger();
+    initScrollNav();
 });
 
-// Setup all event listeners
+// ── Event listeners ──────────────────────────────────────────────
 function setupEventListeners() {
-    // Login form
-    const loginForm = document.getElementById('loginFormElement');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
-
-    // Register form
+    const loginForm    = document.getElementById('loginFormElement');
     const registerForm = document.getElementById('registerFormElement');
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegister);
-    }
 
-    // Close modal when clicking outside
-    const modal = document.getElementById('authModal');
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeAuthModal();
-            }
+    if (loginForm)    loginForm.addEventListener('submit', handleLogin);
+    if (registerForm) registerForm.addEventListener('submit', handleRegister);
+
+    // Close modal on backdrop click
+    const overlay = document.getElementById('authModal');
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeAuthModal();
         });
     }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAuthModal();
+    });
 }
 
-// Handle login
-async function handleLogin(e) {
-    e.preventDefault();
+// ── Auth modal ────────────────────────────────────────────────────
+function showAuthModal(formType) {
+    const overlay      = document.getElementById('authModal');
+    const loginForm    = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
 
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+    if (!overlay) return;
 
-    try {
-        const result = await login(email, password);
-        
-        if (result) {
-            // Clear form
-            document.getElementById('loginFormElement').reset();
-            
-            // Close modal
-            closeAuthModal();
-            
-            // Redirect to dashboard
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 500);
-        }
-    } catch (error) {
-        alert('❌ Login failed: ' + error.message);
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    if (formType === 'login') {
+        loginForm.style.display    = 'block';
+        registerForm.style.display = 'none';
+    } else {
+        loginForm.style.display    = 'none';
+        registerForm.style.display = 'block';
     }
 }
 
-// Handle register
+function closeAuthModal() {
+    const overlay = document.getElementById('authModal');
+    if (overlay) overlay.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+function toggleAuthForm(e) {
+    e.preventDefault();
+    const loginForm    = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const showingLogin = loginForm.style.display !== 'none';
+    loginForm.style.display    = showingLogin ? 'none'  : 'block';
+    registerForm.style.display = showingLogin ? 'block' : 'none';
+}
+
+// ── Handle login ──────────────────────────────────────────────────
+async function handleLogin(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'Signing in…';
+    btn.disabled = true;
+
+    try {
+        const result = await login(
+            document.getElementById('loginEmail').value,
+            document.getElementById('loginPassword').value
+        );
+
+        if (result) {
+            e.target.reset();
+            closeAuthModal();
+            setTimeout(() => { window.location.href = '/dashboard'; }, 300);
+        }
+    } catch (error) {
+        alert('Login failed: ' + error.message);
+    } finally {
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+    }
+}
+
+// ── Handle register ───────────────────────────────────────────────
 async function handleRegister(e) {
     e.preventDefault();
 
-    const username = document.getElementById('regUsername').value;
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
+    const password        = document.getElementById('regPassword').value;
     const confirmPassword = document.getElementById('regConfirmPassword').value;
 
-    // Validation
-    if (password !== confirmPassword) {
-        alert('❌ Passwords do not match');
-        return;
-    }
+    if (password !== confirmPassword) { alert('Passwords do not match'); return; }
+    if (password.length < 6)          { alert('Password must be at least 6 characters'); return; }
 
-    if (password.length < 6) {
-        alert('❌ Password must be at least 6 characters');
-        return;
-    }
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'Creating account…';
+    btn.disabled = true;
 
     try {
-        const result = await register(username, email, password, confirmPassword);
-        
+        const result = await register(
+            document.getElementById('regUsername').value,
+            document.getElementById('regEmail').value,
+            password,
+            confirmPassword
+        );
+
         if (result) {
-            // Clear form
-            document.getElementById('registerFormElement').reset();
-            
-            // Show success message
-            alert('✅ Account created successfully! Redirecting to dashboard...');
-            
-            // Close modal
+            e.target.reset();
             closeAuthModal();
-            
-            // Redirect to dashboard
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 500);
+            setTimeout(() => { window.location.href = '/dashboard'; }, 300);
         }
     } catch (error) {
-        alert('❌ Registration failed: ' + error.message);
+        alert('Registration failed: ' + error.message);
+    } finally {
+        btn.textContent = 'Create Account';
+        btn.disabled = false;
     }
 }
 
-// Show auth modal
-function showAuthModal(formType) {
-    const modal = document.getElementById('authModal');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
+// ── Hamburger menu ────────────────────────────────────────────────
+function initHamburger() {
+    const hamburger = document.getElementById('hamburger');
+    const navLinks  = document.getElementById('navLinks');
+    if (!hamburger || !navLinks) return;
 
-    modal.classList.add('show');
+    hamburger.addEventListener('click', () => {
+        const open = navLinks.classList.toggle('open');
+        hamburger.classList.toggle('open', open);
+        hamburger.setAttribute('aria-expanded', String(open));
+    });
 
-    if (formType === 'login') {
-        loginForm.style.display = 'block';
-        registerForm.style.display = 'none';
-    } else if (formType === 'register') {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-    }
-}
-
-// Close auth modal
-function closeAuthModal() {
-    const modal = document.getElementById('authModal');
-    modal.classList.remove('show');
-}
-
-// Toggle between login and register
-function toggleAuthForm(e) {
-    e.preventDefault();
-
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-
-    if (loginForm.style.display === 'none') {
-        loginForm.style.display = 'block';
-        registerForm.style.display = 'none';
-    } else {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-    }
-}
-
-// Scroll to features section
-function scrollToFeatures() {
-    const featuresSection = document.getElementById('features');
-    if (featuresSection) {
-        featuresSection.scrollIntoView({ behavior: 'smooth' });
-    }
-}
-
-// Scroll to auth
-function scrollToAuth() {
-    showAuthModal('login');
-}
-
-// API Integration - Use the same functions from api.js
-async function login(email, password) {
-    try {
-        const response = await fetch('http://localhost:5000/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
+    // Close on nav-link click (mobile)
+    navLinks.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('open');
+            hamburger.classList.remove('open');
+            hamburger.setAttribute('aria-expanded', 'false');
         });
-        const data = await response.json();
-        
-        if (response.ok) {
-            const token = data.token;
-            const userId = data.user._id;
-            
-            localStorage.setItem('authToken', token);
-            localStorage.setItem('userId', userId);
-            
-            return data;
-        } else {
-            throw new Error(data.error || 'Login failed');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        throw error;
-    }
+    });
+}
+
+// ── Scroll shadow on nav ──────────────────────────────────────────
+function initScrollNav() {
+    const nav = document.getElementById('landingNav');
+    if (!nav) return;
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+}
+
+// ── API ───────────────────────────────────────────────────────────
+async function login(email, password) {
+    const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Login failed');
+    localStorage.setItem('authToken', data.token);
+    localStorage.setItem('userId',    data.user._id);
+    return data;
 }
 
 async function register(username, email, password, confirmPassword) {
-    try {
-        const response = await fetch('http://localhost:5000/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, email, password, confirmPassword }),
-        });
-        const data = await response.json();
-        
-        if (response.ok) {
-            const token = data.token;
-            const userId = data.user._id;
-            
-            localStorage.setItem('authToken', token);
-            localStorage.setItem('userId', userId);
-            
-            return data;
-        } else {
-            throw new Error(data.error || 'Registration failed');
-        }
-    } catch (error) {
-        console.error('Registration error:', error);
-        throw error;
-    }
+    const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password, confirmPassword }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Registration failed');
+    localStorage.setItem('authToken', data.token);
+    localStorage.setItem('userId',    data.user._id);
+    return data;
 }
 
 function isLoggedIn() {
