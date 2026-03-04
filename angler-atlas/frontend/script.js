@@ -446,28 +446,31 @@ function initializeMap() {
     loadNearbyOnMap();
 }
 
-// Build a safe DOM node for map info windows
+// Escape user-supplied text for safe use inside an HTML string
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// Build the InfoWindow HTML string — values are HTML-escaped so no XSS risk.
+// Returns a string because google.maps.InfoWindow accepts strings in all API versions.
 function buildInfoWindowContent(catchData) {
-    const div = document.createElement('div');
-    div.style.color = '#333';
-
-    const speciesEl = document.createElement('strong');
-    speciesEl.textContent = catchData.species;
-    div.appendChild(speciesEl);
-    div.appendChild(document.createElement('br'));
-
-    const byEl = document.createTextNode(`By: ${catchData.userId.username}`);
-    div.appendChild(byEl);
-    div.appendChild(document.createElement('br'));
-
-    if (catchData.weight) {
-        div.appendChild(document.createTextNode(`Weight: ${catchData.weight} lbs`));
-        div.appendChild(document.createElement('br'));
-    }
-
-    div.appendChild(document.createTextNode(new Date(catchData.createdAt).toLocaleDateString()));
-
-    return div;
+    const species = escapeHtml(catchData.species);
+    const username = escapeHtml(catchData.userId?.username || 'Unknown');
+    const date = new Date(catchData.createdAt).toLocaleDateString();
+    const weightLine = catchData.weight
+        ? `Weight: ${escapeHtml(String(catchData.weight))} lbs<br>`
+        : '';
+    return `<div style="color:#333;min-width:140px;">
+        <strong>${species}</strong><br>
+        By: ${username}<br>
+        ${weightLine}
+        ${date}
+    </div>`;
 }
 
 // Load nearby catches on map
