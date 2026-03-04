@@ -6,14 +6,13 @@ let userMarkers = [];
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if user is logged in
     if (!isLoggedIn()) {
         showAuthModal();
     } else {
         await initializeApp();
     }
-
     setupEventListeners();
+    initDarkMode();
 });
 
 // Initialize main app
@@ -98,11 +97,14 @@ async function loadFeed(page = 1) {
     }
 }
 
-// Create post card as a DOM element (safe against XSS)
+// Create post card as a DOM element (safe against XSS — all user text via textContent)
 function createPostCard(catchData) {
     const user = catchData.userId;
     const likes = catchData.likes ? catchData.likes.length : 0;
-    const timestamp = new Date(catchData.createdAt).toLocaleDateString();
+    const timestamp = new Date(catchData.createdAt).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'short', day: 'numeric',
+    });
+    const initials = user.username ? user.username.slice(0, 2).toUpperCase() : '??';
 
     const article = document.createElement('article');
     article.className = 'post-card';
@@ -114,16 +116,17 @@ function createPostCard(catchData) {
 
     const avatar = document.createElement('div');
     avatar.className = 'user-avatar';
+    avatar.textContent = initials;
 
     const userInfo = document.createElement('div');
     userInfo.style.flex = '1';
 
-    const usernameEl = document.createElement('span');
+    const usernameEl = document.createElement('div');
     usernameEl.className = 'username';
     usernameEl.textContent = user.username;
 
     const timeEl = document.createElement('div');
-    timeEl.style.cssText = 'font-size: 0.8rem; color: #999;';
+    timeEl.className = 'post-time';
     timeEl.textContent = timestamp;
 
     userInfo.appendChild(usernameEl);
@@ -135,35 +138,46 @@ function createPostCard(catchData) {
     const imgContainer = document.createElement('div');
     imgContainer.className = 'post-image-container';
     const img = document.createElement('img');
-    img.src = `https://placehold.co/600x400/00578a/ffffff?text=${encodeURIComponent(catchData.species)}`;
+    img.src = `https://placehold.co/600x360/002f4b/ffffff?text=${encodeURIComponent(catchData.species)}`;
     img.alt = catchData.species;
     img.className = 'post-image';
+    img.loading = 'lazy';
     imgContainer.appendChild(img);
 
     // Data
     const postData = document.createElement('div');
     postData.className = 'post-data';
 
-    const catchLine = document.createElement('span');
-    let catchText = `Catch: ${catchData.species}`;
-    if (catchData.weight) catchText += ` | Weight: ${catchData.weight} lbs`;
-    if (catchData.length) catchText += ` | Length: ${catchData.length} in`;
-    if (catchData.depth) catchText += ` | Depth: ${catchData.depth} ft`;
-    catchLine.textContent = catchText;
-    postData.appendChild(catchLine);
+    const speciesTag = document.createElement('div');
+    speciesTag.className = 'species-tag';
+    speciesTag.textContent = catchData.species;
+    postData.appendChild(speciesTag);
 
-    postData.appendChild(document.createElement('br'));
+    const detailLine = document.createElement('div');
+    const parts = [];
+    if (catchData.weight) parts.push(`${catchData.weight} lbs`);
+    if (catchData.length) parts.push(`${catchData.length} in`);
+    if (catchData.depth)  parts.push(`${catchData.depth} ft depth`);
+    detailLine.textContent = parts.length ? parts.join(' · ') : '';
+    if (parts.length) postData.appendChild(detailLine);
 
-    const locLine = document.createElement('span');
-    let locText = `Location: ${catchData.location.address || 'GPS Location'}`;
-    if (catchData.lureUsed) locText += ` | Lure: ${catchData.lureUsed}`;
-    locLine.textContent = locText;
+    const locLine = document.createElement('div');
+    locLine.textContent = catchData.location.address
+        ? `📍 ${catchData.location.address}`
+        : '📍 GPS Location';
     postData.appendChild(locLine);
 
+    if (catchData.lureUsed) {
+        const lureEl = document.createElement('div');
+        lureEl.textContent = `🪝 ${catchData.lureUsed}`;
+        postData.appendChild(lureEl);
+    }
+
     if (catchData.releaseInfo?.wasReleased) {
-        postData.appendChild(document.createElement('br'));
-        const releasedEl = document.createElement('strong');
-        releasedEl.textContent = '✓ Released';
+        const releasedEl = document.createElement('div');
+        releasedEl.textContent = '↩ Released';
+        releasedEl.style.color = 'var(--success)';
+        releasedEl.style.fontWeight = '600';
         postData.appendChild(releasedEl);
     }
 
@@ -174,8 +188,7 @@ function createPostCard(catchData) {
     const likeBtn = document.createElement('button');
     likeBtn.className = 'action-btn like-btn';
     likeBtn.dataset.catchId = catchData._id;
-    // Icon is hardcoded markup, not user content
-    likeBtn.innerHTML = '<i class="fa-solid fa-fish"></i> ';
+    likeBtn.innerHTML = '<i class="fa-solid fa-heart"></i>';
     const likeCountEl = document.createElement('span');
     likeCountEl.className = 'like-count';
     likeCountEl.textContent = likes;
@@ -183,7 +196,7 @@ function createPostCard(catchData) {
 
     const shareBtn = document.createElement('button');
     shareBtn.className = 'action-btn share-btn';
-    shareBtn.innerHTML = '<i class="fa-solid fa-anchor"></i> Share';
+    shareBtn.innerHTML = '<i class="fa-solid fa-share-nodes"></i> Share';
 
     const commentBtn = document.createElement('button');
     commentBtn.className = 'action-btn comment-btn';
@@ -208,14 +221,26 @@ async function loadLeaderboard() {
         const leaderboardList = document.getElementById('leaderboardList');
         leaderboardList.innerHTML = '';
 
+        const medals = ['🥇', '🥈', '🥉'];
+
         leaderboard.slice(0, 10).forEach((user, index) => {
             const li = document.createElement('li');
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = `${index + 1}. ${user.username}`;
-            const ptsSpan = document.createElement('span');
-            ptsSpan.textContent = `${user.calculatedPoints || user.points || 0} pts`;
-            li.appendChild(nameSpan);
-            li.appendChild(ptsSpan);
+
+            const rankEl = document.createElement('span');
+            rankEl.className = 'lb-rank';
+            rankEl.textContent = medals[index] || `${index + 1}`;
+
+            const nameEl = document.createElement('span');
+            nameEl.className = 'lb-name';
+            nameEl.textContent = user.username;
+
+            const ptsEl = document.createElement('span');
+            ptsEl.className = 'lb-pts';
+            ptsEl.textContent = `${user.calculatedPoints || user.points || 0} pts`;
+
+            li.appendChild(rankEl);
+            li.appendChild(nameEl);
+            li.appendChild(ptsEl);
             leaderboardList.appendChild(li);
         });
     } catch (error) {
@@ -235,17 +260,16 @@ async function loadGearSpotlight() {
             spotlight.innerHTML = '';
 
             const nameEl = document.createElement('p');
-            const nameStrong = document.createElement('strong');
-            nameStrong.textContent = random.name;
-            nameEl.appendChild(nameStrong);
+            nameEl.className = 'gear-name';
+            nameEl.textContent = random.name;
 
             const priceEl = document.createElement('p');
-            priceEl.style.cssText = 'color: var(--accent-copper); font-weight: bold;';
+            priceEl.className = 'gear-price';
             priceEl.textContent = `$${random.price}`;
 
             const buyBtn = document.createElement('button');
             buyBtn.className = 'purchase-btn';
-            buyBtn.textContent = 'Buy Now';
+            buyBtn.textContent = 'View Deal';
 
             spotlight.appendChild(nameEl);
             spotlight.appendChild(priceEl);
@@ -295,8 +319,10 @@ function setupEventListeners() {
     // Navigation
     document.getElementById('mapLink')?.addEventListener('click', (e) => {
         e.preventDefault();
-        initializeMap();
         document.getElementById('mapModal').classList.add('show');
+        initializeMap();
+        // Leaflet needs the container to be visible before it can calculate tile layout
+        setTimeout(() => map && map.invalidateSize(), 100);
     });
 
     document.getElementById('profileLink')?.addEventListener('click', (e) => {
@@ -304,10 +330,9 @@ function setupEventListeners() {
         alert('Profile page coming soon!');
     });
 
-    document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
-        e.preventDefault();
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
         logout();
-        window.location.reload();
+        window.location.href = '/';
     });
 
     // Event delegation for feed actions (like, share)
@@ -419,55 +444,50 @@ function showAuthModal() {
     document.getElementById('authModal').classList.add('show');
 }
 
-// Initialize Google Map
+// Initialize Leaflet map (no API key required — uses OpenStreetMap tiles)
 function initializeMap() {
     if (map) return; // Already initialized
 
-    const mapElement = document.getElementById('map');
-    const mapOptions = {
-        zoom: 12,
-        center: {
-            lat: userLocation.latitude,
-            lng: userLocation.longitude,
-        },
-    };
+    map = L.map('map').setView([userLocation.latitude, userLocation.longitude], 12);
 
-    map = new google.maps.Map(mapElement, mapOptions);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+    }).addTo(map);
 
-    // Add user location marker
-    new google.maps.Marker({
-        position: mapOptions.center,
-        map: map,
-        title: 'Your Location',
-        icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-    });
+    // User location marker
+    L.marker([userLocation.latitude, userLocation.longitude])
+        .addTo(map)
+        .bindPopup('<strong>Your Location</strong>');
 
     // Load nearby catches
     loadNearbyOnMap();
 }
 
-// Build a safe DOM node for map info windows
-function buildInfoWindowContent(catchData) {
-    const div = document.createElement('div');
-    div.style.color = '#333';
+// Escape user-supplied text for safe insertion into HTML strings
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
-    const speciesEl = document.createElement('strong');
-    speciesEl.textContent = catchData.species;
-    div.appendChild(speciesEl);
-    div.appendChild(document.createElement('br'));
-
-    const byEl = document.createTextNode(`By: ${catchData.userId.username}`);
-    div.appendChild(byEl);
-    div.appendChild(document.createElement('br'));
-
-    if (catchData.weight) {
-        div.appendChild(document.createTextNode(`Weight: ${catchData.weight} lbs`));
-        div.appendChild(document.createElement('br'));
-    }
-
-    div.appendChild(document.createTextNode(new Date(catchData.createdAt).toLocaleDateString()));
-
-    return div;
+// Build popup HTML — all user values are HTML-escaped to prevent XSS
+function buildPopupContent(catchData) {
+    const species = escapeHtml(catchData.species);
+    const username = escapeHtml(catchData.userId?.username || 'Unknown');
+    const date = new Date(catchData.createdAt).toLocaleDateString();
+    const weightLine = catchData.weight
+        ? `Weight: ${escapeHtml(String(catchData.weight))} lbs<br>`
+        : '';
+    return `<div style="min-width:140px;">
+        <strong>${species}</strong><br>
+        By: ${username}<br>
+        ${weightLine}
+        ${date}
+    </div>`;
 }
 
 // Load nearby catches on map
@@ -476,24 +496,37 @@ async function loadNearbyOnMap() {
         const catches = await getNearby(userLocation.longitude, userLocation.latitude);
 
         catches.forEach(catchData => {
-            const marker = new google.maps.Marker({
-                position: {
-                    lat: catchData.location.coordinates[1],
-                    lng: catchData.location.coordinates[0],
-                },
-                map: map,
-                title: catchData.species,
-            });
-
-            const infoWindow = new google.maps.InfoWindow({
-                content: buildInfoWindowContent(catchData),
-            });
-
-            marker.addListener('click', () => {
-                infoWindow.open(map, marker);
-            });
+            const lat = catchData.location.coordinates[1];
+            const lng = catchData.location.coordinates[0];
+            L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup(buildPopupContent(catchData));
         });
     } catch (error) {
         console.error('Error loading nearby catches:', error);
     }
+}
+
+// Dark mode
+function initDarkMode() {
+    const toggle = document.getElementById('darkModeToggle');
+    if (!toggle) return;
+
+    function applyTheme(dark) {
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        toggle.innerHTML = dark
+            ? '<i class="fa-solid fa-sun"></i>'
+            : '<i class="fa-solid fa-moon"></i>';
+        toggle.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+    }
+
+    // Initialise from saved preference
+    const saved = localStorage.getItem('theme');
+    applyTheme(saved === 'dark');
+
+    toggle.addEventListener('click', () => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        applyTheme(!isDark);
+    });
 }

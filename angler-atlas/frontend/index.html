@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Angler Atlas - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places,geometry"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -15,101 +19,147 @@
         if (!localStorage.getItem('authToken')) {
             window.location.href = '/';
         }
+        // Apply saved theme before render to avoid flash
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
     </script>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
         <div class="modal-content auth-modal">
             <span class="close-modal">&times;</span>
             <div id="authContainer">
-                <!-- Login Form -->
                 <div id="loginForm" class="auth-form">
-                    <h2>Login</h2>
+                    <div class="auth-header">
+                        <i class="fa-solid fa-fish auth-logo"></i>
+                        <h2>Welcome Back</h2>
+                        <p class="auth-subtitle">Sign in to your Angler Atlas account</p>
+                    </div>
                     <form id="loginFormElement">
-                        <input type="email" id="loginEmail" placeholder="Email" required>
-                        <input type="password" id="loginPassword" placeholder="Password" required>
-                        <button type="submit" class="btn-primary">Login</button>
+                        <div class="input-group">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" id="loginEmail" placeholder="Email address" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="loginPassword" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="btn-primary btn-full">Sign In</button>
                     </form>
                     <p class="toggle-auth">Don't have an account? <a href="#" onclick="toggleAuthForm(event)">Register</a></p>
                 </div>
 
-                <!-- Register Form -->
                 <div id="registerForm" class="auth-form" style="display: none;">
-                    <h2>Register</h2>
+                    <div class="auth-header">
+                        <i class="fa-solid fa-fish auth-logo"></i>
+                        <h2>Create Account</h2>
+                        <p class="auth-subtitle">Join the Angler Atlas community</p>
+                    </div>
                     <form id="registerFormElement">
-                        <input type="text" id="regUsername" placeholder="Username" required>
-                        <input type="email" id="regEmail" placeholder="Email" required>
-                        <input type="password" id="regPassword" placeholder="Password" required>
-                        <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
-                        <button type="submit" class="btn-primary">Register</button>
+                        <div class="input-group">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input type="text" id="regUsername" placeholder="Username" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" id="regEmail" placeholder="Email address" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="regPassword" placeholder="Password (min 8 chars)" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="regConfirmPassword" placeholder="Confirm password" required>
+                        </div>
+                        <button type="submit" class="btn-primary btn-full">Create Account</button>
                     </form>
-                    <p class="toggle-auth">Already have an account? <a href="#" onclick="toggleAuthForm(event)">Login</a></p>
+                    <p class="toggle-auth">Already have an account? <a href="#" onclick="toggleAuthForm(event)">Sign In</a></p>
                 </div>
             </div>
         </div>
     </div>
 
-
+    <!-- Navigation -->
+    <header class="top-nav">
         <div class="nav-left">
+            <i class="fa-solid fa-fish nav-logo"></i>
             <h1 class="branding">ANGLER ATLAS</h1>
         </div>
         <div class="search-bar-container">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" placeholder="Search catches..." class="search-input">
+            <input type="text" placeholder="Search catches, species, locations…" class="search-input">
         </div>
         <nav class="nav-right">
-            <a href="#" class="nav-item" id="mapLink"><i class="fa-solid fa-map"></i> Map</a>
-            <a href="#" class="nav-item active" id="feedLink"><i class="fa-solid fa-newspaper"></i> Feed</a>
-            <a href="#" class="nav-item" id="profileLink"><i class="fa-solid fa-user"></i> Profile</a>
-            <button id="logoutBtn" class="nav-item" style="background: none; border: none; cursor: pointer; padding: 0;">
-                <i class="fa-solid fa-sign-out"></i> Logout
+            <a href="#" class="nav-item" id="mapLink"><i class="fa-solid fa-map"></i><span>Map</span></a>
+            <a href="#" class="nav-item active" id="feedLink"><i class="fa-solid fa-newspaper"></i><span>Feed</span></a>
+            <a href="#" class="nav-item" id="profileLink"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+            <button id="darkModeToggle" class="icon-btn" title="Toggle dark mode" aria-label="Toggle dark mode">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button id="logoutBtn" class="icon-btn" title="Logout" aria-label="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
             </button>
         </nav>
     </header>
 
+    <!-- Main Layout -->
     <div class="main-container">
 
         <aside class="sidebar-left">
             <div class="widget dashboard-widget">
-                <h3>User Dashboard</h3>
-                <div class="rank-box">Rank: <strong id="userRank">Master Angler</strong></div>
-                <div class="points-box">Points: <strong id="userPoints">0</strong></div>
-                <div class="catches-box">Catches: <strong id="userCatches">0</strong></div>
+                <div class="widget-header">
+                    <h3><i class="fa-solid fa-gauge-high"></i> Dashboard</h3>
+                </div>
+                <div class="stat-card rank-box">
+                    <span class="stat-label"><i class="fa-solid fa-trophy"></i> Rank</span>
+                    <strong id="userRank">Novice Angler</strong>
+                </div>
+                <div class="stat-card points-box">
+                    <span class="stat-label"><i class="fa-solid fa-star"></i> Points</span>
+                    <strong id="userPoints">0</strong>
+                </div>
+                <div class="stat-card catches-box">
+                    <span class="stat-label"><i class="fa-solid fa-fish"></i> Catches</span>
+                    <strong id="userCatches">0</strong>
+                </div>
             </div>
             <div class="widget weather-widget">
-                <h3>Weather</h3>
+                <div class="widget-header">
+                    <h3><i class="fa-solid fa-cloud-sun"></i> Weather</h3>
+                </div>
                 <div class="weather-data">
                     <span class="temp" id="weatherTemp">--°F</span>
-                    <span class="condition" id="weatherCondition"><i class="fa-solid fa-cloud"></i> Loading...</span>
+                    <span class="condition" id="weatherCondition"><i class="fa-solid fa-cloud"></i> Loading…</span>
                 </div>
             </div>
         </aside>
 
         <main class="activity-feed">
             <div class="feed-header">
-                <h2>Activity Feed</h2>
+                <h2><i class="fa-solid fa-water"></i> Activity Feed</h2>
                 <button id="openPostModalBtn" class="btn-primary">
                     <i class="fa-solid fa-plus"></i> Log Catch
                 </button>
             </div>
-            
-            <div id="feedContainer" class="feed-posts">
-                <!-- Posts will be loaded here -->
-            </div>
-            <div id="loadMoreBtn" class="load-more" style="text-align: center; margin-top: 2rem;">
-                <button class="btn-primary">Load More</button>
-            </div>
+
+            <div id="feedContainer" class="feed-posts"></div>
+            <div id="loadMoreBtn" class="load-more"></div>
         </main>
 
         <aside class="sidebar-right">
             <div class="widget leaderboard-widget">
-                <h3>Leaderboard</h3>
-                <ol id="leaderboardList" class="leaderboard-list">
-                    <!-- Leaderboard will be loaded here -->
-                </ol>
+                <div class="widget-header">
+                    <h3><i class="fa-solid fa-ranking-star"></i> Leaderboard</h3>
+                </div>
+                <ol id="leaderboardList" class="leaderboard-list"></ol>
             </div>
             <div class="widget gear-spotlight-widget">
-                <h3>Gear Spotlight</h3>
-                <div id="gearSpotlight">
-                    <p>Loading gear...</p>
+                <div class="widget-header">
+                    <h3><i class="fa-solid fa-bag-shopping"></i> Gear Spotlight</h3>
                 </div>
+                <div id="gearSpotlight"><p class="loading-text">Loading gear…</p></div>
             </div>
         </aside>
 
@@ -119,39 +169,69 @@
     <div id="mapModal" class="modal">
         <div class="modal-content map-modal">
             <span class="close-modal">&times;</span>
-            <h2>Fishing Locations Map</h2>
+            <h2><i class="fa-solid fa-map-location-dot"></i> Fishing Locations</h2>
             <div id="map"></div>
         </div>
     </div>
 
     <!-- Catch Logging Modal -->
     <div id="postModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content post-modal">
             <span class="close-modal">&times;</span>
-            <h2>Log a New Catch</h2>
+            <h2><i class="fa-solid fa-fish"></i> Log a New Catch</h2>
             <form id="createPostForm">
-                <input type="text" id="speciesInput" placeholder="Species (e.g. Bass)" required>
-                <input type="number" id="weightInput" placeholder="Weight (lbs)" step="0.1">
-                <input type="number" id="lengthInput" placeholder="Length (inches)" step="0.1">
-                <input type="number" id="depthInput" placeholder="Depth (ft)" step="0.1">
-                <input type="text" id="lureInput" placeholder="Lure Used (e.g. Worm)">
-                <input type="number" id="tempInput" placeholder="Water Temperature (°F)" step="0.1">
-                <textarea id="notesInput" placeholder="Notes about the catch..."></textarea>
-                <input type="text" id="locationInput" placeholder="Location (will use current GPS)" required>
+                <div class="form-grid">
+                    <div class="input-group full-width">
+                        <i class="fa-solid fa-fish input-icon"></i>
+                        <input type="text" id="speciesInput" placeholder="Species (e.g. Largemouth Bass)" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-weight-scale input-icon"></i>
+                        <input type="number" id="weightInput" placeholder="Weight (lbs)" step="0.1" min="0">
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-ruler input-icon"></i>
+                        <input type="number" id="lengthInput" placeholder="Length (in)" step="0.1" min="0">
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-water input-icon"></i>
+                        <input type="number" id="depthInput" placeholder="Depth (ft)" step="0.1" min="0">
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-temperature-half input-icon"></i>
+                        <input type="number" id="tempInput" placeholder="Water temp (°F)" step="0.1">
+                    </div>
+                    <div class="input-group full-width">
+                        <i class="fa-solid fa-hook input-icon"></i>
+                        <input type="text" id="lureInput" placeholder="Lure / Bait used">
+                    </div>
+                    <div class="input-group full-width">
+                        <i class="fa-solid fa-location-dot input-icon"></i>
+                        <input type="text" id="locationInput" placeholder="Location name (GPS used automatically)" required>
+                    </div>
+                    <div class="input-group full-width">
+                        <i class="fa-solid fa-note-sticky input-icon"></i>
+                        <textarea id="notesInput" placeholder="Notes about conditions, technique…"></textarea>
+                    </div>
+                </div>
                 <div class="form-row">
-                    <label>
-                        <input type="checkbox" id="releaseCheckbox"> Released
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="releaseCheckbox">
+                        <span class="checkmark"></span>
+                        <i class="fa-solid fa-arrow-rotate-left"></i> Released
                     </label>
-                    <label>
-                        Visibility:
+                    <div class="input-group select-group">
+                        <i class="fa-solid fa-eye input-icon"></i>
                         <select id="visibilitySelect">
                             <option value="public">Public</option>
                             <option value="friends">Friends Only</option>
                             <option value="private">Private</option>
                         </select>
-                    </label>
+                    </div>
                 </div>
-                <button type="submit" class="btn-submit">Log Catch</button>
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Catch
+                </button>
             </form>
         </div>
     </div>
