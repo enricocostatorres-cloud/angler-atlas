@@ -1,8 +1,31 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
 const Catch = require('../models/Catch');
 const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Multer storage config for catch photos
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, '../uploads'),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1e6);
+    const ext = path.extname(file.originalname);
+    cb(null, `catch-${unique}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|gif|webp/;
+    const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+    const mime = allowed.test(file.mimetype);
+    cb(ext && mime ? null : new Error('Only image files are allowed'), ext && mime);
+  },
+});
 
 // Validate coordinates are in-range real numbers
 function parseCoords(latitude, longitude) {
@@ -14,8 +37,8 @@ function parseCoords(latitude, longitude) {
   return { lat, lng };
 }
 
-// Log a new catch
-router.post('/log', verifyToken, async (req, res, next) => {
+// Log a new catch (accepts JSON or multipart/form-data with photo)
+router.post('/log', verifyToken, upload.single('photo'), async (req, res, next) => {
   try {
     const {
       species,
@@ -27,14 +50,27 @@ router.post('/log', verifyToken, async (req, res, next) => {
       address,
       lureUsed,
       waterConditions,
+      waterTemperature,
       weather,
       timeOfDay,
       catchTime,
-      releaseInfo,
       notes,
       visibility,
       images,
+      wasReleased,
     } = req.body;
+
+    // Support releaseInfo from JSON or wasReleased from FormData
+    let releaseInfo = req.body.releaseInfo;
+    if (!releaseInfo && wasReleased === 'true') {
+      releaseInfo = { wasReleased: true };
+    }
+
+    // Support waterConditions from JSON or waterTemperature from FormData
+    let waterCond = waterConditions;
+    if (!waterCond && waterTemperature) {
+      waterCond = { temperature: parseFloat(waterTemperature) };
+    }
 
     if (!species || !latitude || !longitude) {
       return res.status(400).json({ error: 'Species and location are required' });
@@ -60,6 +96,16 @@ router.post('/log', verifyToken, async (req, res, next) => {
       return res.status(400).json({ error: 'Depth must be a non-negative number' });
     }
 
+    // Build images array — uploaded photo path + any existing URLs
+    const imageList = [];
+    if (req.file) {
+      imageList.push(`/uploads/${req.file.filename}`);
+    }
+    if (images) {
+      const extra = Array.isArray(images) ? images : [images];
+      imageList.push(...extra);
+    }
+
     const newCatch = new Catch({
       userId: req.userId,
       species: trimmedSpecies,
@@ -72,12 +118,12 @@ router.post('/log', verifyToken, async (req, res, next) => {
         address: address ? String(address).trim().slice(0, 200) : undefined,
       },
       lureUsed: lureUsed ? String(lureUsed).trim().slice(0, 100) : undefined,
-      waterConditions,
+      waterConditions: waterCond,
       weather,
       timeOfDay,
       catchTime: catchTime || new Date(),
       releaseInfo,
-      images,
+      images: imageList.length > 0 ? imageList : undefined,
       notes: notes ? String(notes).trim().slice(0, 1000) : undefined,
       visibility: visibility || 'public',
     });
@@ -197,7 +243,7 @@ router.post('/:catchId/like', verifyToken, async (req, res, next) => {
   }
 });
 
-// Add comment
+// Add comment (saves denormalized username for quick display)
 router.post('/:catchId/comment', verifyToken, async (req, res, next) => {
   try {
     const { text } = req.body;
@@ -208,12 +254,17 @@ router.post('/:catchId/comment', verifyToken, async (req, res, next) => {
 
     const trimmedText = String(text).trim().slice(0, 500);
 
+    // Look up username for denormalized storage
+    const User = require('../models/User');
+    const user = await User.findById(req.userId).select('username');
+
     const catchDoc = await Catch.findByIdAndUpdate(
       req.params.catchId,
       {
         $push: {
           comments: {
             userId: req.userId,
+            username: user ? user.username : 'Angler',
             text: trimmedText,
             createdAt: new Date(),
           },

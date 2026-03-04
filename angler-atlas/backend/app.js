@@ -55,12 +55,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'Server is running', timestamp: new Date() });
 });
 
+// Serve uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Serve frontend
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/landing.html'));
 });
 
-app.get('/dashboard', (req, res) => {
+app.get('/app', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 

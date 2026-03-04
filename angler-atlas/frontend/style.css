@@ -768,6 +768,117 @@ body {
     padding: 1rem 0 2rem;
 }
 
+/* ── Photo upload ────────────────────────────────────────────────── */
+.photo-upload-group { margin-bottom: 0.75rem; }
+
+.photo-input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.photo-upload-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1rem;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color var(--transition), background-color var(--transition);
+}
+
+.photo-upload-label:hover {
+    border-color: var(--accent);
+    background-color: var(--bg-stat);
+}
+
+.photo-upload-label i { color: var(--accent); font-size: 1.1rem; }
+
+/* ── Comments ────────────────────────────────────────────────────── */
+.comment-section {
+    border-top: 1px solid var(--border);
+    padding: 0.75rem 1.1rem;
+    background-color: var(--bg-card);
+    transition: background-color var(--transition);
+}
+
+.comment-list { max-height: 240px; overflow-y: auto; }
+
+.comment-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+    line-height: 1.55;
+}
+
+.comment-item:last-child { border-bottom: none; }
+
+.comment-author {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.comment-text {
+    color: var(--text-secondary);
+}
+
+.comment-time {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.comment-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+
+.comment-input {
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color var(--transition);
+}
+
+.comment-input:focus {
+    border-color: var(--primary-light);
+}
+
+.comment-input::placeholder { color: var(--text-muted); }
+
+.comment-submit {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    transition: background-color var(--transition);
+}
+
+.comment-submit:hover { background: var(--accent-hover); }
+
 /* ── Dark mode leaflet fix ───────────────────────────────────────── */
 [data-theme="dark"] .leaflet-tile { filter: brightness(0.8) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7); }
 [data-theme="dark"] .leaflet-container { background: #1e293b; }

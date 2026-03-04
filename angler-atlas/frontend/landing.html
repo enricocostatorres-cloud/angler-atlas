@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Angler Atlas — Master the Water</title>
+    <title>Angler Atlas — Track Every Cast. Own Every Catch.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -15,19 +15,18 @@
     <!-- ── Navigation ──────────────────────────────────────────── -->
     <nav class="landing-nav" id="landingNav">
         <div class="nav-container">
-            <a href="#" class="nav-logo">
+            <a href="/" class="nav-logo">
                 <i class="fa-solid fa-fish"></i>
                 <span>ANGLER ATLAS</span>
             </a>
 
             <div class="nav-links" id="navLinks">
-                <a href="#about"     class="nav-link">About Us</a>
                 <a href="#features"  class="nav-link">Features</a>
-                <a href="#how"       class="nav-link">How It Works</a>
+                <a href="#about"     class="nav-link">About Us</a>
                 <a href="#community" class="nav-link">Community</a>
                 <div class="nav-actions">
-                    <button class="btn-nav-signin"  onclick="showAuthModal('login')">Sign In</button>
-                    <button class="btn-nav-signup"  onclick="showAuthModal('register')">Create Account</button>
+                    <a href="/app?modal=login"    class="btn-nav-signin">Sign In</a>
+                    <a href="/app?modal=register" class="btn-nav-signup">Create Account</a>
                 </div>
             </div>
 
@@ -41,20 +40,19 @@
 
     <!-- ── Hero ────────────────────────────────────────────────── -->
     <section class="hero">
-        <!-- Swap src below with assets/hero.jpg once you have your own photo -->
         <div class="hero-bg-wrap">
-            <img src="https://picsum.photos/seed/fishing/1920/900" alt="Angler fishing at sunrise" class="hero-bg-img">
+            <img src="https://picsum.photos/seed/fishing1/1600/900" alt="Angler fishing at sunrise" class="hero-bg-img">
             <div class="hero-bg-overlay"></div>
         </div>
         <div class="hero-inner section-container">
             <div class="hero-content">
                 <span class="hero-eyebrow"><i class="fa-solid fa-fish"></i> The Angler's Platform</span>
-                <h1>Master the Water.<br>Own Your Catch.</h1>
+                <h1>Track Every Cast.<br>Own Every Catch.</h1>
                 <p>Log every catch, discover new spots on live maps, compete on leaderboards, and connect with a global community of passionate anglers.</p>
                 <div class="hero-buttons">
-                    <button class="btn-primary-large" onclick="showAuthModal('register')">
+                    <a href="/app?modal=register" class="btn-primary-large">
                         <i class="fa-solid fa-user-plus"></i> Create Free Account
-                    </button>
+                    </a>
                     <a href="#features" class="btn-secondary-large">
                         <i class="fa-solid fa-circle-play"></i> See Features
                     </a>
@@ -70,25 +68,6 @@
         </div>
     </section>
 
-    <!-- ── About Us ────────────────────────────────────────────── -->
-    <section id="about" class="about">
-        <div class="section-container about-grid">
-            <div class="about-text">
-                <span class="section-eyebrow">About Us</span>
-                <h2>Built by Anglers,<br>for Anglers</h2>
-                <p>Angler Atlas started as a passion project by a group of fishing enthusiasts who were tired of keeping catches in a notebook. We built the platform we always wanted — one that combines social sharing, data-driven insights, and community in one place.</p>
-                <p>Whether you're a weekend bass fisherman or a competitive tournament angler, Angler Atlas gives you the tools to fish smarter and share your story.</p>
-                <button class="btn-outline" onclick="showAuthModal('register')">
-                    Join the Community <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-            <div class="about-image">
-                <!-- Swap src with assets/about.jpg once available -->
-                <img src="https://picsum.photos/seed/river/700/500" alt="Angler on a river" loading="lazy">
-            </div>
-        </div>
-    </section>
-
     <!-- ── Features ─────────────────────────────────────────────── -->
     <section id="features" class="features">
         <div class="section-container">
@@ -98,56 +77,43 @@
 
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-map-location-dot"></i></div>
-                    <h3>Interactive Maps</h3>
-                    <p>Discover fishing locations near you and see where anglers are catching fish in real-time with live GPS catch pins.</p>
-                </div>
-                <div class="feature-card">
                     <div class="feature-icon"><i class="fa-solid fa-fish"></i></div>
                     <h3>Catch Logging</h3>
-                    <p>Record species, weight, length, depth, lure, and conditions. Build a personal fishing logbook you'll return to for years.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
-                    <h3>Social Feed</h3>
-                    <p>Share your success, follow fellow anglers, like catches, and spark conversations about techniques and gear.</p>
+                    <p>Record species, weight, length, depth, lure, and conditions. Upload photos and build a personal fishing logbook.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon"><i class="fa-solid fa-ranking-star"></i></div>
                     <h3>Leaderboards</h3>
                     <p>Earn points for every catch, climb global rankings, unlock rank badges, and compete in community challenges.</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
+                    <h3>Social Feed</h3>
+                    <p>Share your catches, follow fellow anglers, like and comment on posts, and spark conversations about techniques.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+                    <h3>Interactive Map</h3>
+                    <p>Discover fishing locations near you and see where anglers are catching fish in real-time with live GPS catch pins.</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- ── How It Works ─────────────────────────────────────────── -->
-    <section id="how" class="how-it-works">
-        <div class="section-container">
-            <span class="section-eyebrow center">How It Works</span>
-            <h2 class="section-title center">Up and Running in Minutes</h2>
-
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-number">01</div>
-                    <div class="step-icon"><i class="fa-solid fa-user-plus"></i></div>
-                    <h3>Create Your Account</h3>
-                    <p>Sign up free in seconds — no credit card needed. Choose a username and you're ready to start your fishing journey.</p>
-                </div>
-                <div class="step-connector"><i class="fa-solid fa-chevron-right"></i></div>
-                <div class="step-card">
-                    <div class="step-number">02</div>
-                    <div class="step-icon"><i class="fa-solid fa-floppy-disk"></i></div>
-                    <h3>Log Your Catches</h3>
-                    <p>Head out fishing and log each catch with species, measurements, location, and the lure that worked. GPS does the heavy lifting.</p>
-                </div>
-                <div class="step-connector"><i class="fa-solid fa-chevron-right"></i></div>
-                <div class="step-card">
-                    <div class="step-number">03</div>
-                    <div class="step-icon"><i class="fa-solid fa-trophy"></i></div>
-                    <h3>Connect &amp; Compete</h3>
-                    <p>Share catches with the community, follow top anglers, climb the leaderboard, and discover secret spots on the live map.</p>
-                </div>
+    <!-- ── About Us ────────────────────────────────────────────── -->
+    <section id="about" class="about">
+        <div class="section-container about-grid">
+            <div class="about-text">
+                <span class="section-eyebrow">About Us</span>
+                <h2>Built by Anglers,<br>for Anglers</h2>
+                <p>Angler Atlas started as a passion project by a group of fishing enthusiasts who were tired of keeping catches in a notebook. We built the platform we always wanted — one that combines social sharing, data-driven insights, and community in one place.</p>
+                <p>Whether you're a weekend bass fisherman or a competitive tournament angler, Angler Atlas gives you the tools to fish smarter and share your story.</p>
+                <a href="/app?modal=register" class="btn-outline">
+                    Join the Community <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="about-image">
+                <img src="https://picsum.photos/seed/river/700/500" alt="Angler on a river" loading="lazy">
             </div>
         </div>
     </section>
@@ -161,114 +127,42 @@
 
             <div class="community-cards">
                 <div class="community-card">
-                    <!-- Replace with assets/catch1.jpg -->
-                    <img src="https://picsum.photos/seed/bass/600/400"   alt="Largemouth Bass catch" loading="lazy">
+                    <img src="https://picsum.photos/seed/bass/600/400" alt="Largemouth Bass catch" loading="lazy">
                     <div class="community-card-body">
-                        <span class="community-species">Largemouth Bass · 4.2 lbs</span>
+                        <span class="community-species">Largemouth Bass · 1.9 kg</span>
                         <p class="community-user"><i class="fa-solid fa-user"></i> reel_mike · Lake Okeechobee, FL</p>
                     </div>
                 </div>
                 <div class="community-card featured">
-                    <!-- Replace with assets/catch2.jpg -->
-                    <img src="https://picsum.photos/seed/trout/600/400"  alt="Rainbow Trout catch" loading="lazy">
+                    <img src="https://picsum.photos/seed/trout/600/400" alt="Rainbow Trout catch" loading="lazy">
                     <div class="community-card-body">
-                        <span class="community-species">Rainbow Trout · 3.8 lbs</span>
+                        <span class="community-species">Rainbow Trout · 1.7 kg</span>
                         <p class="community-user"><i class="fa-solid fa-user"></i> sierra_caster · American River, CA</p>
                     </div>
                 </div>
                 <div class="community-card">
-                    <!-- Replace with assets/catch3.jpg -->
                     <img src="https://picsum.photos/seed/walleye/600/400" alt="Walleye catch" loading="lazy">
                     <div class="community-card-body">
-                        <span class="community-species">Walleye · 5.1 lbs</span>
+                        <span class="community-species">Walleye · 2.3 kg</span>
                         <p class="community-user"><i class="fa-solid fa-user"></i> northwoods_dan · Lake Erie, OH</p>
                     </div>
                 </div>
             </div>
-
-            <div class="community-cta">
-                <button class="btn-primary-large" onclick="showAuthModal('register')">
-                    <i class="fa-solid fa-user-plus"></i> Share Your Catch
-                </button>
-            </div>
         </div>
     </section>
 
-    <!-- ── Plans ───────────────────────────────────────────────── -->
-    <section id="plans" class="plans">
-        <div class="section-container">
-            <span class="section-eyebrow center">Plans</span>
-            <h2 class="section-title center">Simple, Transparent Pricing</h2>
-            <p class="section-subtitle center">Start free and upgrade anytime. No credit card required to get started.</p>
-
-            <div class="plans-grid">
-                <div class="plan-card">
-                    <div class="plan-header">
-                        <h3>Free</h3>
-                        <div class="plan-price">
-                            <span class="currency">$</span>
-                            <span class="amount">0</span>
-                            <span class="period">/month</span>
-                        </div>
-                        <p class="plan-tagline">Perfect for getting started</p>
-                    </div>
-                    <ul class="plan-features">
-                        <li class="on"><i class="fa-solid fa-check"></i> Activity Feed</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Unlimited Catch Logging</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Basic Maps</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Follow Anglers</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Community Leaderboard</li>
-                        <li class="off"><i class="fa-solid fa-xmark"></i> Advanced Weather Data</li>
-                        <li class="off"><i class="fa-solid fa-xmark"></i> Solunar Bite Predictions</li>
-                        <li class="off"><i class="fa-solid fa-xmark"></i> Advanced Analytics</li>
-                    </ul>
-                    <button class="btn-plan-free" onclick="showAuthModal('register')">
-                        Start Free
-                    </button>
-                </div>
-
-                <div class="plan-card premium">
-                    <div class="plan-badge">Most Popular</div>
-                    <div class="plan-header">
-                        <h3>Premium</h3>
-                        <div class="plan-price">
-                            <span class="currency">$</span>
-                            <span class="amount">9.99</span>
-                            <span class="period">/month</span>
-                        </div>
-                        <p class="plan-tagline">For the serious angler</p>
-                    </div>
-                    <ul class="plan-features">
-                        <li class="on"><i class="fa-solid fa-check"></i> Everything in Free</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Historical Weather Data</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Solunar Bite Predictions</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Advanced Analytics</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Unlimited Storage</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Priority Support</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> 10% Gear Store Discount</li>
-                        <li class="on"><i class="fa-solid fa-check"></i> Premium Badge</li>
-                    </ul>
-                    <button class="btn-plan-premium" onclick="showAuthModal('register')">
-                        Upgrade to Premium
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ── CTA Banner ───────────────────────────────────────────── -->
+    <!-- ── Join CTA ─────────────────────────────────────────────── -->
     <section class="cta-banner">
         <div class="cta-banner-bg">
-            <!-- Replace with assets/cta-bg.jpg -->
             <img src="https://picsum.photos/seed/lake/1920/500" alt="" class="cta-banner-img" loading="lazy">
             <div class="cta-banner-overlay"></div>
         </div>
         <div class="cta-banner-inner section-container">
-            <h2>Ready to Master the Water?</h2>
-            <p>Join thousands of anglers logging legendary catches and discovering hidden spots.</p>
-            <button class="btn-primary-large" onclick="showAuthModal('register')">
+            <h2>Join the Community</h2>
+            <p>Thousands of anglers are already logging legendary catches and discovering hidden spots. Don't miss out.</p>
+            <a href="/app?modal=register" class="btn-primary-large">
                 <i class="fa-solid fa-user-plus"></i> Create Your Free Account
-            </button>
+            </a>
         </div>
     </section>
 
@@ -280,7 +174,7 @@
                     <i class="fa-solid fa-fish"></i>
                     <span>ANGLER ATLAS</span>
                 </div>
-                <p>Master the Water. Own Your Catch.</p>
+                <p>Track Every Cast. Own Every Catch.</p>
                 <div class="social-links">
                     <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
                     <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
@@ -292,9 +186,8 @@
                 <h4>Product</h4>
                 <ul>
                     <li><a href="#features">Features</a></li>
-                    <li><a href="#plans">Plans</a></li>
-                    <li><a href="#how">How It Works</a></li>
-                    <li><a href="#" onclick="showAuthModal('login'); return false;">Sign In</a></li>
+                    <li><a href="/app?modal=login">Sign In</a></li>
+                    <li><a href="/app?modal=register">Create Account</a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -303,7 +196,6 @@
                     <li><a href="#about">About Us</a></li>
                     <li><a href="#community">Community</a></li>
                     <li><a href="#">Blog</a></li>
-                    <li><a href="#">Careers</a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -319,66 +211,6 @@
             <p>&copy; 2026 Angler Atlas. All rights reserved.</p>
         </div>
     </footer>
-
-    <!-- ── Auth Modal ───────────────────────────────────────────── -->
-    <div id="authModal" class="auth-overlay" role="dialog" aria-modal="true" aria-label="Sign in or create account">
-        <div class="auth-panel">
-            <button class="auth-close" onclick="closeAuthModal()" aria-label="Close">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <!-- Login Form -->
-            <div id="loginForm" class="auth-form">
-                <div class="auth-logo"><i class="fa-solid fa-fish"></i></div>
-                <h2>Welcome Back</h2>
-                <p class="auth-sub">Sign in to your Angler Atlas account</p>
-                <form id="loginFormElement" novalidate>
-                    <div class="field-group">
-                        <i class="fa-solid fa-envelope field-icon"></i>
-                        <input type="email" id="loginEmail" placeholder="Email address" autocomplete="email" required>
-                    </div>
-                    <div class="field-group">
-                        <i class="fa-solid fa-lock field-icon"></i>
-                        <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
-                    </div>
-                    <button type="submit" class="btn-auth">Sign In</button>
-                </form>
-                <p class="auth-switch">Don't have an account? <a href="#" onclick="toggleAuthForm(event)">Create one</a></p>
-                <a href="#" class="auth-forgot">Forgot password?</a>
-            </div>
-
-            <!-- Register Form -->
-            <div id="registerForm" class="auth-form" style="display:none">
-                <div class="auth-logo"><i class="fa-solid fa-fish"></i></div>
-                <h2>Create Account</h2>
-                <p class="auth-sub">Join the Angler Atlas community</p>
-                <form id="registerFormElement" novalidate>
-                    <div class="field-group">
-                        <i class="fa-solid fa-user field-icon"></i>
-                        <input type="text"     id="regUsername"        placeholder="Username"         autocomplete="username" required>
-                    </div>
-                    <div class="field-group">
-                        <i class="fa-solid fa-envelope field-icon"></i>
-                        <input type="email"    id="regEmail"           placeholder="Email address"    autocomplete="email" required>
-                    </div>
-                    <div class="field-group">
-                        <i class="fa-solid fa-lock field-icon"></i>
-                        <input type="password" id="regPassword"        placeholder="Password"         autocomplete="new-password" required>
-                    </div>
-                    <div class="field-group">
-                        <i class="fa-solid fa-lock field-icon"></i>
-                        <input type="password" id="regConfirmPassword" placeholder="Confirm password" autocomplete="new-password" required>
-                    </div>
-                    <label class="terms-label">
-                        <input type="checkbox" id="agreeTerms" required>
-                        I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
-                    </label>
-                    <button type="submit" class="btn-auth">Create Account</button>
-                </form>
-                <p class="auth-switch">Already have an account? <a href="#" onclick="toggleAuthForm(event)">Sign in</a></p>
-            </div>
-        </div>
-    </div>
 
     <script src="landing.js"></script>
 </body>

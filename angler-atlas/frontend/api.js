@@ -98,6 +98,19 @@ async function logCatch(catchData) {
     return handleResponse(response);
 }
 
+// Log catch with photo (uses FormData / multipart)
+async function logCatchWithPhoto(formData) {
+    const response = await fetch(`${API_BASE_URL}/catches/log`, {
+        method: 'POST',
+        headers: {
+            ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+            // Do NOT set Content-Type — browser sets it with boundary for multipart
+        },
+        body: formData,
+    });
+    return handleResponse(response);
+}
+
 async function getFeed(page = 1) {
     try {
         const response = await fetch(`${API_BASE_URL}/catches/feed?page=${page}`);

@@ -59,6 +59,7 @@ const catchSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
+    username: String,
     text: String,
     createdAt: { type: Date, default: Date.now },
   }],

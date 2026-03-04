@@ -6,9 +6,17 @@ let userMarkers = [];
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
+    // Check for ?modal= query param from landing page
+    const urlParams = new URLSearchParams(window.location.search);
+    const modalParam = urlParams.get('modal');
+
     if (!isLoggedIn()) {
-        showAuthModal();
+        showAuthModal(modalParam || 'login');
     } else {
+        // Clean URL if query param present
+        if (modalParam) {
+            window.history.replaceState({}, '', '/app');
+        }
         await initializeApp();
     }
     setupEventListeners();
@@ -101,6 +109,7 @@ async function loadFeed(page = 1) {
 function createPostCard(catchData) {
     const user = catchData.userId;
     const likes = catchData.likes ? catchData.likes.length : 0;
+    const commentCount = catchData.comments ? catchData.comments.length : 0;
     const timestamp = new Date(catchData.createdAt).toLocaleDateString(undefined, {
         year: 'numeric', month: 'short', day: 'numeric',
     });
@@ -134,17 +143,21 @@ function createPostCard(catchData) {
     header.appendChild(avatar);
     header.appendChild(userInfo);
 
-    // Image
+    // Image — show uploaded photo if available, otherwise placeholder
     const imgContainer = document.createElement('div');
     imgContainer.className = 'post-image-container';
     const img = document.createElement('img');
-    img.src = `https://placehold.co/600x360/002f4b/ffffff?text=${encodeURIComponent(catchData.species)}`;
+    if (catchData.images && catchData.images.length > 0) {
+        img.src = catchData.images[0];
+    } else {
+        img.src = `https://placehold.co/600x360/002f4b/ffffff?text=${encodeURIComponent(catchData.species)}`;
+    }
     img.alt = catchData.species;
     img.className = 'post-image';
     img.loading = 'lazy';
     imgContainer.appendChild(img);
 
-    // Data
+    // Data (metric units)
     const postData = document.createElement('div');
     postData.className = 'post-data';
 
@@ -155,9 +168,9 @@ function createPostCard(catchData) {
 
     const detailLine = document.createElement('div');
     const parts = [];
-    if (catchData.weight) parts.push(`${catchData.weight} lbs`);
-    if (catchData.length) parts.push(`${catchData.length} in`);
-    if (catchData.depth)  parts.push(`${catchData.depth} ft depth`);
+    if (catchData.weight) parts.push(`${catchData.weight} kg`);
+    if (catchData.length) parts.push(`${catchData.length} cm`);
+    if (catchData.depth)  parts.push(`${catchData.depth} m depth`);
     detailLine.textContent = parts.length ? parts.join(' · ') : '';
     if (parts.length) postData.appendChild(detailLine);
 
@@ -200,18 +213,82 @@ function createPostCard(catchData) {
 
     const commentBtn = document.createElement('button');
     commentBtn.className = 'action-btn comment-btn';
-    commentBtn.innerHTML = '<i class="fa-regular fa-comment"></i> Comment';
+    commentBtn.dataset.catchId = catchData._id;
+    commentBtn.innerHTML = '<i class="fa-regular fa-comment"></i> ';
+    const commentCountEl = document.createElement('span');
+    commentCountEl.className = 'comment-count';
+    commentCountEl.textContent = commentCount > 0 ? commentCount : 'Comment';
+    commentBtn.appendChild(commentCountEl);
 
     actions.appendChild(likeBtn);
     actions.appendChild(shareBtn);
     actions.appendChild(commentBtn);
 
+    // Comment section (hidden by default)
+    const commentSection = document.createElement('div');
+    commentSection.className = 'comment-section';
+    commentSection.style.display = 'none';
+    commentSection.dataset.catchId = catchData._id;
+
+    // Existing comments
+    const commentList = document.createElement('div');
+    commentList.className = 'comment-list';
+    if (catchData.comments && catchData.comments.length > 0) {
+        catchData.comments.forEach(comment => {
+            commentList.appendChild(createCommentElement(comment));
+        });
+    }
+
+    // Comment input
+    const commentForm = document.createElement('div');
+    commentForm.className = 'comment-form';
+    const commentInput = document.createElement('input');
+    commentInput.type = 'text';
+    commentInput.className = 'comment-input';
+    commentInput.placeholder = 'Write a comment…';
+    const commentSubmit = document.createElement('button');
+    commentSubmit.className = 'comment-submit';
+    commentSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+    commentSubmit.dataset.catchId = catchData._id;
+    commentForm.appendChild(commentInput);
+    commentForm.appendChild(commentSubmit);
+
+    commentSection.appendChild(commentList);
+    commentSection.appendChild(commentForm);
+
     article.appendChild(header);
     article.appendChild(imgContainer);
     article.appendChild(postData);
     article.appendChild(actions);
+    article.appendChild(commentSection);
 
     return article;
+}
+
+// Create a single comment DOM element
+function createCommentElement(comment) {
+    const el = document.createElement('div');
+    el.className = 'comment-item';
+
+    const user = comment.userId;
+    const nameEl = document.createElement('strong');
+    nameEl.className = 'comment-author';
+    nameEl.textContent = (user && user.username) || comment.username || 'Angler';
+
+    const textEl = document.createElement('span');
+    textEl.className = 'comment-text';
+    textEl.textContent = ' ' + comment.text;
+
+    const timeEl = document.createElement('span');
+    timeEl.className = 'comment-time';
+    timeEl.textContent = new Date(comment.createdAt).toLocaleDateString(undefined, {
+        month: 'short', day: 'numeric',
+    });
+
+    el.appendChild(nameEl);
+    el.appendChild(textEl);
+    el.appendChild(timeEl);
+    return el;
 }
 
 // Load leaderboard
@@ -335,11 +412,21 @@ function setupEventListeners() {
         window.location.href = '/';
     });
 
-    // Event delegation for feed actions (like, share)
+    // Photo file name display
+    document.getElementById('photoInput')?.addEventListener('change', (e) => {
+        const label = document.getElementById('photoFileName');
+        label.textContent = e.target.files.length > 0
+            ? e.target.files[0].name
+            : 'Add a photo of your catch';
+    });
+
+    // Event delegation for feed actions (like, share, comment)
     const feedContainer = document.getElementById('feedContainer');
     feedContainer?.addEventListener('click', async (e) => {
         const likeBtn = e.target.closest('.like-btn');
         const shareBtn = e.target.closest('.share-btn');
+        const commentBtn = e.target.closest('.comment-btn');
+        const commentSubmitBtn = e.target.closest('.comment-submit');
 
         if (likeBtn) {
             e.preventDefault();
@@ -356,39 +443,103 @@ function setupEventListeners() {
 
         if (shareBtn) {
             e.preventDefault();
-            alert('🎣 Link copied to clipboard!');
+            alert('Link copied to clipboard!');
+        }
+
+        // Toggle comment section
+        if (commentBtn) {
+            e.preventDefault();
+            const card = commentBtn.closest('.post-card');
+            const section = card.querySelector('.comment-section');
+            if (section) {
+                const isOpen = section.style.display !== 'none';
+                section.style.display = isOpen ? 'none' : 'block';
+                if (!isOpen) {
+                    section.querySelector('.comment-input')?.focus();
+                }
+            }
+        }
+
+        // Submit comment
+        if (commentSubmitBtn) {
+            e.preventDefault();
+            const catchId = commentSubmitBtn.dataset.catchId;
+            const form = commentSubmitBtn.closest('.comment-form');
+            const input = form.querySelector('.comment-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            try {
+                const comments = await addComment(catchId, text);
+                input.value = '';
+
+                // Re-render comment list
+                const commentList = commentSubmitBtn.closest('.comment-section').querySelector('.comment-list');
+                commentList.innerHTML = '';
+                comments.forEach(c => commentList.appendChild(createCommentElement(c)));
+
+                // Update comment count on button
+                const card = commentSubmitBtn.closest('.post-card');
+                const countEl = card.querySelector('.comment-count');
+                if (countEl) countEl.textContent = comments.length;
+            } catch (error) {
+                alert('Error posting comment: ' + error.message);
+            }
+        }
+    });
+
+    // Submit comment on Enter key
+    feedContainer?.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter' && e.target.classList.contains('comment-input')) {
+            e.preventDefault();
+            const submitBtn = e.target.closest('.comment-form').querySelector('.comment-submit');
+            submitBtn?.click();
         }
     });
 }
 
-// Handle post submit
+// Handle post submit (with optional photo upload)
 async function handlePostSubmit(e) {
     e.preventDefault();
 
-    const catchData = {
-        species: document.getElementById('speciesInput').value,
-        weight: parseFloat(document.getElementById('weightInput').value) || null,
-        length: parseFloat(document.getElementById('lengthInput').value) || null,
-        depth: parseFloat(document.getElementById('depthInput').value) || null,
-        longitude: userLocation.longitude,
-        latitude: userLocation.latitude,
-        address: document.getElementById('locationInput').value,
-        lureUsed: document.getElementById('lureInput').value,
-        waterConditions: {
-            temperature: parseFloat(document.getElementById('tempInput').value) || null,
-        },
-        notes: document.getElementById('notesInput').value,
-        visibility: document.getElementById('visibilitySelect').value,
-        releaseInfo: {
-            wasReleased: document.getElementById('releaseCheckbox').checked,
-        },
-    };
+    const formData = new FormData();
+    formData.append('species', document.getElementById('speciesInput').value);
+    formData.append('latitude', userLocation.latitude);
+    formData.append('longitude', userLocation.longitude);
+    formData.append('address', document.getElementById('locationInput').value);
+    formData.append('visibility', document.getElementById('visibilitySelect').value);
+
+    const weight = parseFloat(document.getElementById('weightInput').value);
+    if (weight) formData.append('weight', weight);
+    const length = parseFloat(document.getElementById('lengthInput').value);
+    if (length) formData.append('length', length);
+    const depth = parseFloat(document.getElementById('depthInput').value);
+    if (depth) formData.append('depth', depth);
+
+    const lure = document.getElementById('lureInput').value;
+    if (lure) formData.append('lureUsed', lure);
+    const notes = document.getElementById('notesInput').value;
+    if (notes) formData.append('notes', notes);
+
+    const temp = parseFloat(document.getElementById('tempInput').value);
+    if (temp) formData.append('waterTemperature', temp);
+
+    if (document.getElementById('releaseCheckbox').checked) {
+        formData.append('wasReleased', 'true');
+    }
+
+    // Photo
+    const photoInput = document.getElementById('photoInput');
+    if (photoInput.files.length > 0) {
+        formData.append('photo', photoInput.files[0]);
+    }
 
     try {
-        await logCatch(catchData);
+        await logCatchWithPhoto(formData);
         alert('Catch logged successfully!');
         document.getElementById('postModal').classList.remove('show');
         document.getElementById('createPostForm').reset();
+        document.getElementById('photoFileName').textContent = 'Add a photo of your catch';
         currentPage = 1;
         await loadFeed();
     } catch (error) {
@@ -406,6 +557,8 @@ async function handleLogin(e) {
     try {
         await login(email, password);
         document.getElementById('authModal').classList.remove('show');
+        // Clean URL query params and load app
+        window.history.replaceState({}, '', '/app');
         await initializeApp();
     } catch (error) {
         alert('Login failed: ' + error.message);
@@ -424,6 +577,7 @@ async function handleRegister(e) {
     try {
         await register(username, email, password, confirmPassword);
         document.getElementById('authModal').classList.remove('show');
+        window.history.replaceState({}, '', '/app');
         await initializeApp();
     } catch (error) {
         alert('Registration failed: ' + error.message);
@@ -439,9 +593,16 @@ function toggleAuthForm(e) {
         document.getElementById('registerForm').style.display === 'none' ? 'block' : 'none';
 }
 
-// Show auth modal
-function showAuthModal() {
+// Show auth modal with optional form type
+function showAuthModal(formType) {
     document.getElementById('authModal').classList.add('show');
+    if (formType === 'register') {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'block';
+    } else {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('registerForm').style.display = 'none';
+    }
 }
 
 // Initialize Leaflet map (no API key required — uses OpenStreetMap tiles)
@@ -480,7 +641,7 @@ function buildPopupContent(catchData) {
     const username = escapeHtml(catchData.userId?.username || 'Unknown');
     const date = new Date(catchData.createdAt).toLocaleDateString();
     const weightLine = catchData.weight
-        ? `Weight: ${escapeHtml(String(catchData.weight))} lbs<br>`
+        ? `Weight: ${escapeHtml(String(catchData.weight))} kg<br>`
         : '';
     return `<div style="min-width:140px;">
         <strong>${species}</strong><br>

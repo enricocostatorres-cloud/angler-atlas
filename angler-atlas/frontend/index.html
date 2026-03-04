@@ -14,12 +14,11 @@
 </head>
 <body>
 
-    <!-- Check if authenticated, redirect if not -->
+    <!-- Check if authenticated, redirect if not (unless arriving with ?modal= from landing) -->
     <script>
-        if (!localStorage.getItem('authToken')) {
+        if (!localStorage.getItem('authToken') && !window.location.search.includes('modal=')) {
             window.location.href = '/';
         }
-        // Apply saved theme before render to avoid flash
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
@@ -130,7 +129,7 @@
                     <h3><i class="fa-solid fa-cloud-sun"></i> Weather</h3>
                 </div>
                 <div class="weather-data">
-                    <span class="temp" id="weatherTemp">--°F</span>
+                    <span class="temp" id="weatherTemp">--°C</span>
                     <span class="condition" id="weatherCondition"><i class="fa-solid fa-cloud"></i> Loading…</span>
                 </div>
             </div>
@@ -179,7 +178,7 @@
         <div class="modal-content post-modal">
             <span class="close-modal">&times;</span>
             <h2><i class="fa-solid fa-fish"></i> Log a New Catch</h2>
-            <form id="createPostForm">
+            <form id="createPostForm" enctype="multipart/form-data">
                 <div class="form-grid">
                     <div class="input-group full-width">
                         <i class="fa-solid fa-fish input-icon"></i>
@@ -187,19 +186,19 @@
                     </div>
                     <div class="input-group">
                         <i class="fa-solid fa-weight-scale input-icon"></i>
-                        <input type="number" id="weightInput" placeholder="Weight (lbs)" step="0.1" min="0">
+                        <input type="number" id="weightInput" placeholder="Weight (kg)" step="0.1" min="0">
                     </div>
                     <div class="input-group">
                         <i class="fa-solid fa-ruler input-icon"></i>
-                        <input type="number" id="lengthInput" placeholder="Length (in)" step="0.1" min="0">
+                        <input type="number" id="lengthInput" placeholder="Length (cm)" step="0.1" min="0">
                     </div>
                     <div class="input-group">
                         <i class="fa-solid fa-water input-icon"></i>
-                        <input type="number" id="depthInput" placeholder="Depth (ft)" step="0.1" min="0">
+                        <input type="number" id="depthInput" placeholder="Depth (m)" step="0.1" min="0">
                     </div>
                     <div class="input-group">
                         <i class="fa-solid fa-temperature-half input-icon"></i>
-                        <input type="number" id="tempInput" placeholder="Water temp (°F)" step="0.1">
+                        <input type="number" id="tempInput" placeholder="Water temp (°C)" step="0.1">
                     </div>
                     <div class="input-group full-width">
                         <i class="fa-solid fa-hook input-icon"></i>
@@ -208,6 +207,13 @@
                     <div class="input-group full-width">
                         <i class="fa-solid fa-location-dot input-icon"></i>
                         <input type="text" id="locationInput" placeholder="Location name (GPS used automatically)" required>
+                    </div>
+                    <div class="input-group full-width photo-upload-group">
+                        <label for="photoInput" class="photo-upload-label">
+                            <i class="fa-solid fa-camera"></i>
+                            <span id="photoFileName">Add a photo of your catch</span>
+                        </label>
+                        <input type="file" id="photoInput" accept="image/*" class="photo-input">
                     </div>
                     <div class="input-group full-width">
                         <i class="fa-solid fa-note-sticky input-icon"></i>
