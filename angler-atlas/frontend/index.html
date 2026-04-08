@@ -213,6 +213,18 @@
                         <i class="fa-solid fa-note-sticky input-icon"></i>
                         <textarea id="notesInput" placeholder="Notes about conditions, technique…"></textarea>
                     </div>
+                    <div class="input-group full-width photo-upload-group">
+                        <label for="catchImageInput" class="photo-upload-label">
+                            <i class="fa-solid fa-camera"></i> Add Photo
+                        </label>
+                        <input type="file" id="catchImageInput" accept="image/jpeg,image/png,image/webp" class="photo-upload-input">
+                        <div id="imagePreview" class="image-preview" style="display: none;">
+                            <img id="previewImg" alt="Preview">
+                            <button type="button" id="removeImageBtn" class="remove-image-btn" title="Remove photo">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-row">
                     <label class="checkbox-label">

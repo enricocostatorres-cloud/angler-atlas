@@ -98,6 +98,19 @@ async function logCatch(catchData) {
     return handleResponse(response);
 }
 
+async function uploadCatchImage(file) {
+    const formData = new FormData();
+    formData.append('catchImage', file);
+    const response = await fetch(`${API_BASE_URL}/catches/upload`, {
+        method: 'POST',
+        headers: {
+            ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+        },
+        body: formData,
+    });
+    return handleResponse(response);
+}
+
 async function getFeed(page = 1) {
     try {
         const response = await fetch(`${API_BASE_URL}/catches/feed?page=${page}`);
