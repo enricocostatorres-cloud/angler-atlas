@@ -280,4 +280,24 @@ router.post('/:catchId/comment', verifyToken, async (req, res, next) => {
   }
 });
 
+// Delete a catch
+router.delete('/:catchId', verifyToken, async (req, res, next) => {
+  try {
+    const catchDoc = await Catch.findById(req.params.catchId);
+
+    if (!catchDoc) {
+      return res.status(404).json({ error: 'Catch not found' });
+    }
+
+    if (String(catchDoc.userId) !== String(req.userId)) {
+      return res.status(403).json({ error: 'Not authorized to delete this catch' });
+    }
+
+    await Catch.findByIdAndDelete(req.params.catchId);
+    res.json({ message: 'Catch deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

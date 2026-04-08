@@ -1,0 +1,502 @@
+/* ── Profile layout ─────────────────────────────────────────────── */
+.profile-container {
+    max-width: 960px;
+    margin: 1.5rem auto;
+    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ── Section title ──────────────────────────────────────────────── */
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.section-title i {
+    color: var(--accent);
+}
+
+/* ── Profile header ─────────────────────────────────────────────── */
+.profile-header {
+    padding: 2rem;
+}
+
+.profile-header-content {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.profile-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 4px solid var(--bg-card);
+    box-shadow: var(--shadow-md);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-initials {
+    color: #fff;
+    font-weight: 800;
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.avatar-edit-btn {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border: 3px solid var(--bg-card);
+    transition: background-color var(--transition);
+}
+
+.avatar-edit-btn:hover {
+    background-color: var(--accent-hover);
+}
+
+.profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.profile-username {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0;
+}
+
+.btn-edit {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color var(--transition), border-color var(--transition), background-color var(--transition);
+}
+
+.btn-edit:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background-color: var(--bg-stat);
+}
+
+.profile-bio {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.profile-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-full);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.rank-badge {
+    background-color: rgba(199, 108, 58, 0.1);
+    color: var(--accent);
+}
+
+.points-badge {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--gold);
+}
+
+.plan-badge {
+    background-color: rgba(0, 47, 75, 0.08);
+    color: var(--primary);
+}
+
+.plan-badge.premium {
+    background-color: rgba(245, 158, 11, 0.12);
+    color: var(--gold);
+}
+
+.profile-follow-counts {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.profile-follow-counts strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* ── Edit profile form ──────────────────────────────────────────── */
+.edit-profile-form {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.edit-field {
+    margin-bottom: 1rem;
+}
+
+.edit-field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.edit-field input,
+.edit-field textarea {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.edit-field input:focus,
+.edit-field textarea:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(0, 87, 138, 0.12);
+}
+
+.edit-field textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.char-count {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.btn-secondary {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.55rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    transition: color var(--transition), border-color var(--transition), background-color var(--transition);
+}
+
+.btn-secondary:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+    background-color: var(--bg-stat);
+}
+
+/* ── Stats grid ─────────────────────────────────────────────────── */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.stat-card-profile {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition), box-shadow var(--transition), background-color var(--transition), border-color var(--transition);
+}
+
+.stat-card-profile:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+    font-size: 1.3rem;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.stat-name {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ── Catches grid ───────────────────────────────────────────────── */
+.catches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.catch-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition), box-shadow var(--transition), background-color var(--transition), border-color var(--transition);
+}
+
+.catch-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.catch-card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    background-color: var(--bg-stat);
+}
+
+.catch-card-body {
+    padding: 0.9rem 1rem;
+}
+
+.catch-card-species {
+    display: inline-block;
+    background-color: rgba(199, 108, 58, 0.1);
+    color: var(--accent);
+    font-weight: 700;
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+}
+
+.catch-card-details {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.catch-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.catch-card-likes {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.catch-card-likes i {
+    color: var(--error);
+}
+
+.btn-delete {
+    background: none;
+    border: 1px solid var(--error);
+    color: var(--error);
+    border-radius: var(--radius-md);
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: background-color var(--transition), color var(--transition);
+}
+
+.btn-delete:hover {
+    background-color: var(--error);
+    color: #fff;
+}
+
+/* ── Purchases placeholder ──────────────────────────────────────── */
+.profile-purchases {
+    padding: 2rem;
+}
+
+.purchases-placeholder {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.purchases-icon {
+    font-size: 2.5rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+}
+
+.purchases-placeholder p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* ── Empty state ────────────────────────────────────────────────── */
+.empty-catches {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.empty-catches i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.empty-catches p {
+    font-size: 0.9rem;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .profile-header-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .profile-name-row {
+        justify-content: center;
+    }
+
+    .profile-badges {
+        justify-content: center;
+    }
+
+    .profile-follow-counts {
+        justify-content: center;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .catches-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-container {
+        padding: 0 1rem;
+    }
+
+    .profile-header {
+        padding: 1.25rem;
+    }
+
+    .profile-avatar {
+        width: 90px;
+        height: 90px;
+    }
+
+    .profile-initials {
+        font-size: 2rem;
+    }
+
+    .profile-username {
+        font-size: 1.25rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .stat-card-profile {
+        padding: 1rem;
+    }
+}

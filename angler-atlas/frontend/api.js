@@ -160,6 +160,14 @@ async function addComment(catchId, text) {
     return handleResponse(response);
 }
 
+async function deleteCatch(catchId) {
+    const response = await fetch(`${API_BASE_URL}/catches/${catchId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+}
+
 // Leaderboard Functions
 async function getLeaderboard(timeframe = 'all') {
     try {

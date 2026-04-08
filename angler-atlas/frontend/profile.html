@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angler Atlas - Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <script>
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/';
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+
+    <!-- Navigation -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <i class="fa-solid fa-fish nav-logo"></i>
+            <h1 class="branding">ANGLER ATLAS</h1>
+        </div>
+        <div class="search-bar-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" placeholder="Search catches, species, locations..." class="search-input">
+        </div>
+        <nav class="nav-right">
+            <a href="/dashboard" class="nav-item" id="feedLink"><i class="fa-solid fa-newspaper"></i><span>Feed</span></a>
+            <a href="/profile" class="nav-item active" id="profileLink"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+            <button id="darkModeToggle" class="icon-btn" title="Toggle dark mode" aria-label="Toggle dark mode">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button id="logoutBtn" class="icon-btn" title="Logout" aria-label="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Profile Content -->
+    <div class="profile-container">
+
+        <!-- Profile Header -->
+        <section class="profile-header widget">
+            <div class="profile-header-content">
+                <div class="profile-avatar-wrapper">
+                    <div class="profile-avatar" id="profileAvatar">
+                        <span class="profile-initials" id="profileInitials">??</span>
+                    </div>
+                    <label for="profilePicInput" class="avatar-edit-btn" title="Change photo">
+                        <i class="fa-solid fa-camera"></i>
+                    </label>
+                    <input type="file" id="profilePicInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name-row">
+                        <h2 id="profileUsername" class="profile-username">Loading...</h2>
+                        <button id="editProfileBtn" class="btn-edit"><i class="fa-solid fa-pen"></i> Edit Profile</button>
+                    </div>
+                    <p id="profileBio" class="profile-bio">No bio yet.</p>
+                    <div class="profile-badges">
+                        <span class="badge rank-badge" id="profileRank"><i class="fa-solid fa-trophy"></i> Novice Angler</span>
+                        <span class="badge points-badge" id="profilePoints"><i class="fa-solid fa-star"></i> 0 pts</span>
+                        <span class="badge plan-badge" id="profilePlan"><i class="fa-solid fa-crown"></i> Free</span>
+                    </div>
+                    <div class="profile-follow-counts">
+                        <span><strong id="followerCount">0</strong> Followers</span>
+                        <span><strong id="followingCount">0</strong> Following</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Form (hidden by default) -->
+            <div id="editProfileForm" class="edit-profile-form" style="display:none;">
+                <div class="edit-field">
+                    <label for="editUsername">Username</label>
+                    <input type="text" id="editUsername" maxlength="50">
+                </div>
+                <div class="edit-field">
+                    <label for="editBio">Bio</label>
+                    <textarea id="editBio" maxlength="200" placeholder="Tell us about your fishing adventures..."></textarea>
+                    <span class="char-count"><span id="bioCharCount">0</span>/200</span>
+                </div>
+                <div class="edit-field">
+                    <label for="editLocation">Location</label>
+                    <input type="text" id="editLocation" maxlength="100" placeholder="Your fishing region">
+                </div>
+                <div class="edit-actions">
+                    <button id="saveProfileBtn" class="btn-primary"><i class="fa-solid fa-check"></i> Save</button>
+                    <button id="cancelEditBtn" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Dashboard -->
+        <section class="profile-stats">
+            <h3 class="section-title"><i class="fa-solid fa-chart-simple"></i> Stats Dashboard</h3>
+            <div class="stats-grid">
+                <div class="stat-card-profile">
+                    <div class="stat-icon"><i class="fa-solid fa-fish"></i></div>
+                    <div class="stat-value" id="statTotalCatches">0</div>
+                    <div class="stat-name">Total Catches</div>
+                </div>
+                <div class="stat-card-profile">
+                    <div class="stat-icon"><i class="fa-solid fa-award"></i></div>
+                    <div class="stat-value" id="statTopSpecies">--</div>
+                    <div class="stat-name">Top Species</div>
+                </div>
+                <div class="stat-card-profile">
+                    <div class="stat-icon"><i class="fa-solid fa-weight-scale"></i></div>
+                    <div class="stat-value" id="statAvgWeight">--</div>
+                    <div class="stat-name">Avg Weight</div>
+                </div>
+                <div class="stat-card-profile">
+                    <div class="stat-icon"><i class="fa-solid fa-heart"></i></div>
+                    <div class="stat-value" id="statTotalLikes">0</div>
+                    <div class="stat-name">Total Likes</div>
+                </div>
+                <div class="stat-card-profile">
+                    <div class="stat-icon"><i class="fa-solid fa-worm"></i></div>
+                    <div class="stat-value" id="statTopLure">--</div>
+                    <div class="stat-name">Top Lure</div>
+                </div>
+                <div class="stat-card-profile">
+                    <div class="stat-icon"><i class="fa-solid fa-location-dot"></i></div>
+                    <div class="stat-value" id="statTopLocation">--</div>
+                    <div class="stat-name">Fav Location</div>
+                </div>
+                <div class="stat-card-profile">
+                    <div class="stat-icon"><i class="fa-solid fa-calendar"></i></div>
+                    <div class="stat-value" id="statMemberSince">--</div>
+                    <div class="stat-name">Member Since</div>
+                </div>
+                <div class="stat-card-profile">
+                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="stat-value" id="statFollowers">0</div>
+                    <div class="stat-name">Followers</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Catches -->
+        <section class="profile-catches">
+            <h3 class="section-title"><i class="fa-solid fa-fish"></i> My Catches</h3>
+            <div id="catchesGrid" class="catches-grid">
+                <p class="loading-text">Loading catches...</p>
+            </div>
+        </section>
+
+        <!-- Recent Purchases -->
+        <section class="profile-purchases widget">
+            <h3 class="section-title"><i class="fa-solid fa-bag-shopping"></i> Recent Purchases</h3>
+            <div class="purchases-placeholder">
+                <i class="fa-solid fa-basket-shopping purchases-icon"></i>
+                <p>No purchases yet. Visit the Gear Store to find great deals!</p>
+                <a href="/dashboard" class="btn-primary"><i class="fa-solid fa-store"></i> Browse Store</a>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="api.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>
