@@ -1,0 +1,177 @@
+/* ── Map page layout ────────────────────────────────────────────── */
+.map-page-wrapper {
+    position: relative;
+    height: calc(100vh - var(--nav-height));
+}
+
+#fullMap {
+    width: 100%;
+    height: 100%;
+}
+
+/* ── Search bar ─────────────────────────────────────────────────── */
+.map-search-bar {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    padding: 0.5rem 0.75rem 0.5rem 1rem;
+    box-shadow: var(--shadow-md);
+    width: 90%;
+    max-width: 480px;
+    gap: 0.5rem;
+    transition: background-color var(--transition), border-color var(--transition);
+}
+
+.map-search-bar i {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.map-search-bar input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    flex: 1;
+    min-width: 0;
+}
+
+.map-search-bar input::placeholder {
+    color: var(--text-muted);
+}
+
+.map-search-btn {
+    background-color: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-full);
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background-color var(--transition);
+    flex-shrink: 0;
+}
+
+.map-search-btn:hover {
+    background-color: var(--accent-hover);
+}
+
+/* ── Info box ───────────────────────────────────────────────────── */
+.map-info-box {
+    position: absolute;
+    bottom: 2rem;
+    left: 1rem;
+    z-index: 1000;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1rem;
+    box-shadow: var(--shadow-md);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background-color var(--transition), border-color var(--transition);
+}
+
+.map-info-box i {
+    color: var(--accent);
+}
+
+.map-info-box span {
+    color: var(--text-primary);
+    font-weight: 800;
+}
+
+/* ── Weather card ───────────────────────────────────────────────── */
+.map-weather-card {
+    position: absolute;
+    bottom: 2rem;
+    right: 1rem;
+    z-index: 1000;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: background-color var(--transition), border-color var(--transition);
+}
+
+.map-weather-icon {
+    font-size: 1.3rem;
+    color: var(--accent);
+}
+
+.map-weather-temp {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.map-weather-cond {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* ── Leaflet popup styling ──────────────────────────────────────── */
+.catch-popup {
+    font-family: 'Inter', sans-serif;
+    min-width: 160px;
+}
+
+.catch-popup-img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 0.4rem;
+}
+
+.catch-popup strong {
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+.catch-popup .popup-details {
+    font-size: 0.78rem;
+    color: #475569;
+    line-height: 1.5;
+    margin-top: 0.2rem;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .map-search-bar {
+        width: 94%;
+        top: 0.5rem;
+    }
+
+    .map-info-box {
+        bottom: 1rem;
+        left: 0.5rem;
+    }
+
+    .map-weather-card {
+        bottom: 1rem;
+        right: 0.5rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
