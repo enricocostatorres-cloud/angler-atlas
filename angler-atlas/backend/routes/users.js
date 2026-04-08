@@ -1,5 +1,7 @@
 const express = require('express');
 const User = require('../models/User');
+const Catch = require('../models/Catch');
+const Image = require('../models/Image');
 const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -62,6 +64,39 @@ router.put('/:userId', verifyToken, async (req, res, next) => {
     ).select('-password');
 
     res.json(user);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Delete user account and all associated data
+router.delete('/:userId', verifyToken, async (req, res, next) => {
+  try {
+    if (req.params.userId !== String(req.userId)) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Remove user from others' followers/following lists
+    await User.updateMany(
+      { followers: req.params.userId },
+      { $pull: { followers: req.params.userId } }
+    );
+    await User.updateMany(
+      { following: req.params.userId },
+      { $pull: { following: req.params.userId } }
+    );
+
+    // Delete all user's catches, images, and the user document
+    await Catch.deleteMany({ userId: req.params.userId });
+    await Image.deleteMany({ userId: req.params.userId });
+    await User.findByIdAndDelete(req.params.userId);
+
+    res.json({ message: 'Account deleted successfully' });
   } catch (error) {
     next(error);
   }

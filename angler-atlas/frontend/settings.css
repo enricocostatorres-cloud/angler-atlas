@@ -1,0 +1,301 @@
+/* ── Settings Container ─────────────────────────────────────────── */
+.settings-container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+}
+
+.settings-header {
+    margin-bottom: 1.5rem;
+}
+
+.settings-header h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.settings-header h2 i {
+    color: var(--accent);
+}
+
+/* ── Settings Card ─────────────────────────────────────────────── */
+.settings-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    transition: box-shadow var(--transition);
+}
+
+.settings-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.settings-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-stat);
+}
+
+.settings-card-header i {
+    color: var(--accent);
+    font-size: 1rem;
+}
+
+.settings-card-header h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.settings-card-body {
+    padding: 1.25rem;
+}
+
+/* ── Form Elements ─────────────────────────────────────────────── */
+.settings-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+}
+
+.settings-select {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: border-color var(--transition);
+}
+
+.settings-select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.settings-input {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    transition: border-color var(--transition);
+}
+
+.settings-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.settings-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    resize: vertical;
+    transition: border-color var(--transition);
+}
+
+.settings-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.settings-textarea-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.char-count {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.settings-hint {
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin-top: 0.4rem;
+    min-height: 1.2em;
+}
+
+/* ── Plan Info ─────────────────────────────────────────────────── */
+.plan-info {
+    margin-bottom: 0.75rem;
+}
+
+.plan-badge-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: var(--radius-full);
+    background: var(--bg-stat);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.plan-badge-display.premium {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    border-color: transparent;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────── */
+.btn-sm {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.82rem;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color var(--transition);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-upgrade {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity var(--transition);
+}
+
+.btn-upgrade:hover {
+    opacity: 0.9;
+}
+
+/* ── Danger Zone ───────────────────────────────────────────────── */
+.danger-card {
+    border-color: var(--error);
+}
+
+.danger-card .settings-card-header {
+    background: #fef2f2;
+}
+
+.danger-card .settings-card-header i {
+    color: var(--error);
+}
+
+[data-theme="dark"] .danger-card .settings-card-header {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.danger-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--error);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color var(--transition);
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.delete-confirm-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--bg-stat);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.delete-confirm-row .settings-input {
+    max-width: 100%;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .settings-container {
+        padding: 1.25rem 1rem 2rem;
+    }
+
+    .settings-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .settings-select,
+    .settings-input {
+        max-width: 100%;
+    }
+}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angler Atlas - Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <script>
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/';
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+
+    <!-- Navigation -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <i class="fa-solid fa-fish nav-logo"></i>
+            <h1 class="branding">ANGLER ATLAS</h1>
+        </div>
+        <div class="search-bar-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" placeholder="Search catches, species, locations..." class="search-input">
+        </div>
+        <nav class="nav-right">
+            <a href="/map" class="nav-item" id="mapLink"><i class="fa-solid fa-map"></i><span>Map</span></a>
+            <a href="/store" class="nav-item" id="storeLink"><i class="fa-solid fa-bag-shopping"></i><span>Store</span></a>
+            <a href="/dashboard" class="nav-item" id="feedLink"><i class="fa-solid fa-newspaper"></i><span>Feed</span></a>
+            <a href="/profile" class="nav-item" id="profileLink"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+            <a href="/settings" class="icon-btn active" title="Settings" aria-label="Settings">
+                <i class="fa-solid fa-gear"></i>
+            </a>
+            <button id="darkModeToggle" class="icon-btn" title="Toggle dark mode" aria-label="Toggle dark mode">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button id="logoutBtn" class="icon-btn" title="Logout" aria-label="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Settings Content -->
+    <div class="settings-container">
+        <div class="settings-header">
+            <h2><i class="fa-solid fa-gear"></i> Settings</h2>
+        </div>
+
+        <!-- Language Card -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <i class="fa-solid fa-language"></i>
+                <h3>Language</h3>
+            </div>
+            <div class="settings-card-body">
+                <label for="languageSelect" class="settings-label">Preferred language</label>
+                <select id="languageSelect" class="settings-select">
+                    <option value="en">English</option>
+                    <option value="pt">Portuguese</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                </select>
+                <p class="settings-hint" id="languageHint"></p>
+            </div>
+        </div>
+
+        <!-- Plan Management Card -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <i class="fa-solid fa-crown"></i>
+                <h3>Plan Management</h3>
+            </div>
+            <div class="settings-card-body">
+                <div class="plan-info" id="planInfo">
+                    <span class="plan-badge-display" id="planBadge">Free</span>
+                </div>
+                <div id="planAction"></div>
+            </div>
+        </div>
+
+        <!-- Signature / Bio Card -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <i class="fa-solid fa-pen-fancy"></i>
+                <h3>Signature / Bio</h3>
+            </div>
+            <div class="settings-card-body">
+                <label for="bioTextarea" class="settings-label">Your bio</label>
+                <textarea id="bioTextarea" class="settings-textarea" maxlength="200" placeholder="Tell us about your fishing adventures..."></textarea>
+                <div class="settings-textarea-footer">
+                    <span class="char-count"><span id="bioCharCount">0</span>/200</span>
+                    <button id="saveBioBtn" class="btn-primary btn-sm"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Account Card -->
+        <div class="settings-card danger-card">
+            <div class="settings-card-header">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h3>Danger Zone</h3>
+            </div>
+            <div class="settings-card-body">
+                <p class="danger-text">Permanently delete your account and all your data. This action cannot be undone.</p>
+                <div class="delete-confirm-row" id="deleteConfirmRow" style="display:none;">
+                    <label for="deleteConfirmInput" class="settings-label">Type <strong>DELETE</strong> to confirm</label>
+                    <input type="text" id="deleteConfirmInput" class="settings-input" placeholder="Type DELETE">
+                    <button id="confirmDeleteBtn" class="btn-danger btn-sm" disabled><i class="fa-solid fa-trash"></i> Confirm Delete</button>
+                </div>
+                <button id="deleteAccountBtn" class="btn-danger"><i class="fa-solid fa-trash"></i> Delete My Account</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="search.js"></script>
+    <script src="settings.js"></script>
+</body>
+</html>
