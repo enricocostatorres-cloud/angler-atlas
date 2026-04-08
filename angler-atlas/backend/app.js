@@ -14,7 +14,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdnjs.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://unpkg.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      imgSrc: ["'self'", "data:", "blob:", "https://picsum.photos", "https://fastly.picsum.photos", "https://placehold.co", "https://*.tile.openstreetmap.org", "https://unpkg.com"],
       connectSrc: ["'self'", "https://api.open-meteo.com", "https://marine-api.open-meteo.com", "https://nominatim.openstreetmap.org", "https://*.tile.openstreetmap.org"],
     },
   },
