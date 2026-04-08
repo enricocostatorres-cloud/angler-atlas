@@ -123,6 +123,9 @@ async function handleRegister(e) {
     if (!/[A-Z]/.test(password))      { alert('Password must contain at least one uppercase letter'); return; }
     if (!/[0-9]/.test(password))      { alert('Password must contain at least one number'); return; }
 
+    const agreeTerms = document.getElementById('agreeTerms');
+    if (agreeTerms && !agreeTerms.checked) { alert('You must agree to the Terms and Privacy Policy'); return; }
+
     const btn = e.target.querySelector('button[type="submit"]');
     btn.textContent = 'Creating account…';
     btn.disabled = true;
