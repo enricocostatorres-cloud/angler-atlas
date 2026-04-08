@@ -100,7 +100,9 @@ async function handleRegister(e) {
     const confirmPassword = document.getElementById('regConfirmPassword').value;
 
     if (password !== confirmPassword) { alert('Passwords do not match'); return; }
-    if (password.length < 6)          { alert('Password must be at least 6 characters'); return; }
+    if (password.length < 8)          { alert('Password must be at least 8 characters'); return; }
+    if (!/[A-Z]/.test(password))      { alert('Password must contain at least one uppercase letter'); return; }
+    if (!/[0-9]/.test(password))      { alert('Password must contain at least one number'); return; }
 
     const btn = e.target.querySelector('button[type="submit"]');
     btn.textContent = 'Creating account…';

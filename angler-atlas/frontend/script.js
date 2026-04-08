@@ -1,7 +1,7 @@
 // Global state
 let currentPage = 1;
 let map = null;
-let userLocation = { latitude: 40.7128, longitude: -74.0060 }; // Default: NYC
+let userLocation = { latitude: 53.3498, longitude: -6.2603 }; // Default: Dublin, Ireland
 let userMarkers = [];
 
 // Initialize app
@@ -25,24 +25,29 @@ async function initializeApp() {
         }
 
         // Get user location
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    userLocation = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                    };
-                },
-                () => {
-                    // Fall back to default location silently
-                }
-            );
-        }
+        await new Promise((resolve) => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                        };
+                        resolve();
+                    },
+                    () => resolve() // Fall back to Dublin default
+                );
+            } else {
+                resolve();
+            }
+        });
 
         // Load initial data
         await loadFeed();
         await loadLeaderboard();
         await loadGearSpotlight();
+        loadWeather();
+        loadMarine();
     } catch (error) {
         console.error('Error initializing app:', error);
     }
@@ -295,6 +300,107 @@ async function loadGearSpotlight() {
     }
 }
 
+// Weather code to description and icon
+function getWeatherInfo(code) {
+    const weatherMap = {
+        0:  { desc: 'Clear sky',       icon: 'fa-sun' },
+        1:  { desc: 'Mainly clear',    icon: 'fa-sun' },
+        2:  { desc: 'Partly cloudy',   icon: 'fa-cloud-sun' },
+        3:  { desc: 'Overcast',        icon: 'fa-cloud' },
+        45: { desc: 'Foggy',           icon: 'fa-smog' },
+        48: { desc: 'Icy fog',         icon: 'fa-smog' },
+        51: { desc: 'Light drizzle',   icon: 'fa-cloud-rain' },
+        53: { desc: 'Drizzle',         icon: 'fa-cloud-rain' },
+        55: { desc: 'Heavy drizzle',   icon: 'fa-cloud-rain' },
+        61: { desc: 'Light rain',      icon: 'fa-cloud-rain' },
+        63: { desc: 'Rain',            icon: 'fa-cloud-showers-heavy' },
+        65: { desc: 'Heavy rain',      icon: 'fa-cloud-showers-heavy' },
+        71: { desc: 'Light snow',      icon: 'fa-snowflake' },
+        73: { desc: 'Snow',            icon: 'fa-snowflake' },
+        75: { desc: 'Heavy snow',      icon: 'fa-snowflake' },
+        80: { desc: 'Rain showers',    icon: 'fa-cloud-showers-heavy' },
+        81: { desc: 'Moderate showers', icon: 'fa-cloud-showers-heavy' },
+        82: { desc: 'Heavy showers',   icon: 'fa-cloud-showers-heavy' },
+        95: { desc: 'Thunderstorm',    icon: 'fa-cloud-bolt' },
+        96: { desc: 'Thunderstorm w/ hail', icon: 'fa-cloud-bolt' },
+        99: { desc: 'Severe thunderstorm',  icon: 'fa-cloud-bolt' },
+    };
+    return weatherMap[code] || { desc: 'Unknown', icon: 'fa-cloud' };
+}
+
+// Load real weather data from Open-Meteo
+async function loadWeather() {
+    try {
+        const response = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${userLocation.latitude}&longitude=${userLocation.longitude}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`
+        );
+        const data = await response.json();
+
+        if (data.current) {
+            const temp = Math.round(data.current.temperature_2m);
+            const weatherInfo = getWeatherInfo(data.current.weather_code);
+            const wind = data.current.wind_speed_10m;
+            const humidity = data.current.relative_humidity_2m;
+
+            document.getElementById('weatherTemp').textContent = temp + '°C';
+            document.getElementById('weatherCondition').innerHTML = '';
+            const icon = document.createElement('i');
+            icon.className = `fa-solid ${weatherInfo.icon}`;
+            document.getElementById('weatherCondition').appendChild(icon);
+            document.getElementById('weatherCondition').appendChild(document.createTextNode(' ' + weatherInfo.desc));
+
+            document.getElementById('weatherWind').innerHTML = '';
+            const windIcon = document.createElement('i');
+            windIcon.className = 'fa-solid fa-wind';
+            document.getElementById('weatherWind').appendChild(windIcon);
+            document.getElementById('weatherWind').appendChild(document.createTextNode(` ${wind} km/h`));
+
+            document.getElementById('weatherHumidity').innerHTML = '';
+            const humIcon = document.createElement('i');
+            humIcon.className = 'fa-solid fa-droplet';
+            document.getElementById('weatherHumidity').appendChild(humIcon);
+            document.getElementById('weatherHumidity').appendChild(document.createTextNode(` ${humidity}%`));
+
+            document.getElementById('weatherExtra').style.display = 'flex';
+        }
+    } catch (error) {
+        console.error('Error loading weather:', error);
+    }
+}
+
+// Load marine/tide data from Open-Meteo Marine API
+async function loadMarine() {
+    try {
+        const response = await fetch(
+            `https://marine-api.open-meteo.com/v1/marine?latitude=${userLocation.latitude}&longitude=${userLocation.longitude}&current=wave_height,wave_direction,wave_period&daily=wave_height_max&timezone=auto`
+        );
+        const data = await response.json();
+
+        const marineWidget = document.getElementById('marineWidget');
+        if (!marineWidget) return;
+
+        if (data.current && data.current.wave_height !== null && data.current.wave_height !== undefined) {
+            document.getElementById('marineWaveHeight').textContent = data.current.wave_height + ' m';
+            document.getElementById('marineWavePeriod').textContent = data.current.wave_period + ' s';
+            document.getElementById('marineWaveDir').textContent = data.current.wave_direction + '°';
+
+            const maxWave = data.daily?.wave_height_max?.[0];
+            document.getElementById('marineMaxWave').textContent = maxWave != null ? maxWave + ' m' : '--';
+
+            marineWidget.style.display = 'block';
+        } else {
+            document.getElementById('marineContent').innerHTML = '';
+            const msg = document.createElement('p');
+            msg.className = 'marine-unavailable';
+            msg.textContent = 'No marine data available for this location';
+            document.getElementById('marineContent').appendChild(msg);
+            marineWidget.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error loading marine data:', error);
+    }
+}
+
 // Setup event listeners
 function setupEventListeners() {
     const postModal = document.getElementById('postModal');
@@ -332,19 +438,8 @@ function setupEventListeners() {
     document.getElementById('loginFormElement')?.addEventListener('submit', handleLogin);
     document.getElementById('registerFormElement')?.addEventListener('submit', handleRegister);
 
-    // Navigation
-    document.getElementById('mapLink')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('mapModal').classList.add('show');
-        initializeMap();
-        // Leaflet needs the container to be visible before it can calculate tile layout
-        setTimeout(() => map && map.invalidateSize(), 100);
-    });
-
-    document.getElementById('profileLink')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = '/profile';
-    });
+    // Navigation — links are now plain <a> tags with href, no JS needed
+    // Map modal still works as a fallback if someone triggers it directly
 
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
         logout();
@@ -478,6 +573,11 @@ async function handleRegister(e) {
     const email = document.getElementById('regEmail').value;
     const password = document.getElementById('regPassword').value;
     const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+    if (password !== confirmPassword) { alert('Passwords do not match'); return; }
+    if (password.length < 8) { alert('Password must be at least 8 characters'); return; }
+    if (!/[A-Z]/.test(password)) { alert('Password must contain at least one uppercase letter'); return; }
+    if (!/[0-9]/.test(password)) { alert('Password must contain at least one number'); return; }
 
     try {
         await register(username, email, password, confirmPassword);
