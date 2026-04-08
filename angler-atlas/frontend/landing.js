@@ -17,6 +17,25 @@ function setupEventListeners() {
     if (loginForm)    loginForm.addEventListener('submit', handleLogin);
     if (registerForm) registerForm.addEventListener('submit', handleRegister);
 
+    // Auth modal open buttons (data-auth="login" or data-auth="register")
+    document.querySelectorAll('[data-auth]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAuthModal(btn.getAttribute('data-auth'));
+        });
+    });
+
+    // Close modal button
+    document.getElementById('authCloseBtn')?.addEventListener('click', closeAuthModal);
+
+    // Toggle between login/register forms
+    document.querySelectorAll('.auth-toggle-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleAuthForm(e);
+        });
+    });
+
     // Close modal on backdrop click
     const overlay = document.getElementById('authModal');
     if (overlay) {

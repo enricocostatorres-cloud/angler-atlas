@@ -26,8 +26,8 @@
                 <a href="#how"       class="nav-link">How It Works</a>
                 <a href="#community" class="nav-link">Community</a>
                 <div class="nav-actions">
-                    <button class="btn-nav-signin"  onclick="showAuthModal('login')">Sign In</button>
-                    <button class="btn-nav-signup"  onclick="showAuthModal('register')">Create Account</button>
+                    <button class="btn-nav-signin" data-auth="login">Sign In</button>
+                    <button class="btn-nav-signup" data-auth="register">Create Account</button>
                 </div>
             </div>
 
@@ -52,7 +52,7 @@
                 <h1>Master the Water.<br>Own Your Catch.</h1>
                 <p>Log every catch, discover new spots on live maps, compete on leaderboards, and connect with a global community of passionate anglers.</p>
                 <div class="hero-buttons">
-                    <button class="btn-primary-large" onclick="showAuthModal('register')">
+                    <button class="btn-primary-large" data-auth="register">
                         <i class="fa-solid fa-user-plus"></i> Create Free Account
                     </button>
                     <a href="#features" class="btn-secondary-large">
@@ -78,7 +78,7 @@
                 <h2>Built by Anglers,<br>for Anglers</h2>
                 <p>Angler Atlas started as a passion project by a group of fishing enthusiasts who were tired of keeping catches in a notebook. We built the platform we always wanted — one that combines social sharing, data-driven insights, and community in one place.</p>
                 <p>Whether you're a weekend bass fisherman or a competitive tournament angler, Angler Atlas gives you the tools to fish smarter and share your story.</p>
-                <button class="btn-outline" onclick="showAuthModal('register')">
+                <button class="btn-outline" data-auth="register">
                     Join the Community <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
@@ -187,7 +187,7 @@
             </div>
 
             <div class="community-cta">
-                <button class="btn-primary-large" onclick="showAuthModal('register')">
+                <button class="btn-primary-large" data-auth="register">
                     <i class="fa-solid fa-user-plus"></i> Share Your Catch
                 </button>
             </div>
@@ -222,7 +222,7 @@
                         <li class="off"><i class="fa-solid fa-xmark"></i> Solunar Bite Predictions</li>
                         <li class="off"><i class="fa-solid fa-xmark"></i> Advanced Analytics</li>
                     </ul>
-                    <button class="btn-plan-free" onclick="showAuthModal('register')">
+                    <button class="btn-plan-free" data-auth="register">
                         Start Free
                     </button>
                 </div>
@@ -248,7 +248,7 @@
                         <li class="on"><i class="fa-solid fa-check"></i> 10% Gear Store Discount</li>
                         <li class="on"><i class="fa-solid fa-check"></i> Premium Badge</li>
                     </ul>
-                    <button class="btn-plan-premium" onclick="showAuthModal('register')">
+                    <button class="btn-plan-premium" data-auth="register">
                         Upgrade to Premium
                     </button>
                 </div>
@@ -266,7 +266,7 @@
         <div class="cta-banner-inner section-container">
             <h2>Ready to Master the Water?</h2>
             <p>Join thousands of anglers logging legendary catches and discovering hidden spots.</p>
-            <button class="btn-primary-large" onclick="showAuthModal('register')">
+            <button class="btn-primary-large" data-auth="register">
                 <i class="fa-solid fa-user-plus"></i> Create Your Free Account
             </button>
         </div>
@@ -294,7 +294,7 @@
                     <li><a href="#features">Features</a></li>
                     <li><a href="#plans">Plans</a></li>
                     <li><a href="#how">How It Works</a></li>
-                    <li><a href="#" onclick="showAuthModal('login'); return false;">Sign In</a></li>
+                    <li><a href="#" data-auth="login">Sign In</a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -323,7 +323,7 @@
     <!-- ── Auth Modal ───────────────────────────────────────────── -->
     <div id="authModal" class="auth-overlay" role="dialog" aria-modal="true" aria-label="Sign in or create account">
         <div class="auth-panel">
-            <button class="auth-close" onclick="closeAuthModal()" aria-label="Close">
+            <button class="auth-close" id="authCloseBtn" aria-label="Close">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -343,7 +343,7 @@
                     </div>
                     <button type="submit" class="btn-auth">Sign In</button>
                 </form>
-                <p class="auth-switch">Don't have an account? <a href="#" onclick="toggleAuthForm(event)">Create one</a></p>
+                <p class="auth-switch">Don't have an account? <a href="#" class="auth-toggle-link">Create one</a></p>
                 <a href="#" class="auth-forgot">Forgot password?</a>
             </div>
 
@@ -375,7 +375,7 @@
                     </label>
                     <button type="submit" class="btn-auth">Create Account</button>
                 </form>
-                <p class="auth-switch">Already have an account? <a href="#" onclick="toggleAuthForm(event)">Sign in</a></p>
+                <p class="auth-switch">Already have an account? <a href="#" class="auth-toggle-link">Sign in</a></p>
             </div>
         </div>
     </div>
