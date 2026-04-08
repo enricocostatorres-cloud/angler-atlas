@@ -200,6 +200,17 @@ async function getStoreProducts() {
     }
 }
 
+// Search Functions
+async function searchAPI(query) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`);
+        return await handleResponse(response);
+    } catch (error) {
+        console.error('Error searching:', error);
+        return { users: [], catches: [] };
+    }
+}
+
 // Follow Functions
 async function followUser(userId) {
     const response = await fetch(`${API_BASE_URL}/users/${userId}/follow`, {

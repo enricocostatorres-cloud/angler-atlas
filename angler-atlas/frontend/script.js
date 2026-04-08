@@ -102,6 +102,49 @@ async function loadFeed(page = 1) {
     }
 }
 
+// Build a single comment DOM element
+function buildCommentEl(comment) {
+    const div = document.createElement('div');
+    div.className = 'comment-item';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'comment-avatar';
+    const commenter = comment.userId || {};
+    if (commenter.profilePicture) {
+        const img = document.createElement('img');
+        img.src = commenter.profilePicture;
+        img.alt = commenter.username || '';
+        avatar.appendChild(img);
+    } else {
+        avatar.textContent = (commenter.username || '??').slice(0, 2).toUpperCase();
+    }
+
+    const body = document.createElement('div');
+    body.className = 'comment-body';
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'comment-username';
+    nameEl.textContent = commenter.username || 'Unknown';
+
+    const textEl = document.createElement('span');
+    textEl.className = 'comment-text';
+    textEl.textContent = comment.text;
+
+    body.appendChild(nameEl);
+    body.appendChild(textEl);
+
+    const timeEl = document.createElement('span');
+    timeEl.className = 'comment-time';
+    timeEl.textContent = new Date(comment.createdAt).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'short', day: 'numeric',
+    });
+
+    div.appendChild(avatar);
+    div.appendChild(body);
+    div.appendChild(timeEl);
+    return div;
+}
+
 // Create post card as a DOM element (safe against XSS — all user text via textContent)
 function createPostCard(catchData) {
     const user = catchData.userId;
@@ -218,18 +261,80 @@ function createPostCard(catchData) {
     shareBtn.className = 'action-btn share-btn';
     shareBtn.innerHTML = '<i class="fa-solid fa-share-nodes"></i> Share';
 
+    const commentCount = catchData.comments ? catchData.comments.length : 0;
     const commentBtn = document.createElement('button');
     commentBtn.className = 'action-btn comment-btn';
-    commentBtn.innerHTML = '<i class="fa-regular fa-comment"></i> Comment';
+    commentBtn.innerHTML = `<i class="fa-regular fa-comment"></i> Comment${commentCount ? ' ' + commentCount : ''}`;
 
     actions.appendChild(likeBtn);
     actions.appendChild(shareBtn);
     actions.appendChild(commentBtn);
 
+    // Comment section (hidden by default)
+    const commentSection = document.createElement('div');
+    commentSection.className = 'comment-section';
+    commentSection.style.display = 'none';
+
+    const commentList = document.createElement('div');
+    commentList.className = 'comment-list';
+    if (catchData.comments && catchData.comments.length > 0) {
+        catchData.comments.forEach(c => {
+            commentList.appendChild(buildCommentEl(c));
+        });
+    }
+
+    const commentInputRow = document.createElement('div');
+    commentInputRow.className = 'comment-input-row';
+    const commentInput = document.createElement('input');
+    commentInput.type = 'text';
+    commentInput.className = 'comment-input';
+    commentInput.placeholder = 'Write a comment...';
+    commentInput.maxLength = 500;
+    const commentPostBtn = document.createElement('button');
+    commentPostBtn.className = 'comment-post-btn';
+    commentPostBtn.textContent = 'Post';
+    commentInputRow.appendChild(commentInput);
+    commentInputRow.appendChild(commentPostBtn);
+
+    commentSection.appendChild(commentList);
+    commentSection.appendChild(commentInputRow);
+
+    // Toggle comment section
+    commentBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const visible = commentSection.style.display !== 'none';
+        commentSection.style.display = visible ? 'none' : 'block';
+    });
+
+    // Post comment handler
+    async function postComment() {
+        const text = commentInput.value.trim();
+        if (!text) return;
+        if (!isLoggedIn()) { alert('Please log in to comment'); return; }
+        try {
+            commentPostBtn.disabled = true;
+            const comments = await addComment(catchData._id, text);
+            commentInput.value = '';
+            commentList.innerHTML = '';
+            comments.forEach(c => commentList.appendChild(buildCommentEl(c)));
+            commentBtn.innerHTML = `<i class="fa-regular fa-comment"></i> Comment ${comments.length}`;
+        } catch (error) {
+            alert('Error posting comment: ' + error.message);
+        } finally {
+            commentPostBtn.disabled = false;
+        }
+    }
+
+    commentPostBtn.addEventListener('click', postComment);
+    commentInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') postComment();
+    });
+
     article.appendChild(header);
     article.appendChild(imgContainer);
     article.appendChild(postData);
     article.appendChild(actions);
+    article.appendChild(commentSection);
 
     return article;
 }
@@ -290,6 +395,7 @@ async function loadGearSpotlight() {
             const buyBtn = document.createElement('button');
             buyBtn.className = 'purchase-btn';
             buyBtn.textContent = 'View Deal';
+            buyBtn.addEventListener('click', () => { window.location.href = '/store'; });
 
             spotlight.appendChild(nameEl);
             spotlight.appendChild(priceEl);

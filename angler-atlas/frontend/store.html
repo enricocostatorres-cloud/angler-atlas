@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angler Atlas - Gear Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="store.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <script>
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/';
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+
+    <!-- Navigation -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <i class="fa-solid fa-fish nav-logo"></i>
+            <h1 class="branding">ANGLER ATLAS</h1>
+        </div>
+        <div class="search-bar-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" placeholder="Search catches, species, locations..." class="search-input">
+        </div>
+        <nav class="nav-right">
+            <a href="/map" class="nav-item" id="mapLink"><i class="fa-solid fa-map"></i><span>Map</span></a>
+            <a href="/store" class="nav-item active" id="storeLink"><i class="fa-solid fa-bag-shopping"></i><span>Store</span></a>
+            <a href="/dashboard" class="nav-item" id="feedLink"><i class="fa-solid fa-newspaper"></i><span>Feed</span></a>
+            <a href="/profile" class="nav-item" id="profileLink"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+            <button id="darkModeToggle" class="icon-btn" title="Toggle dark mode" aria-label="Toggle dark mode">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button id="logoutBtn" class="icon-btn" title="Logout" aria-label="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Store Banner -->
+    <section class="store-banner">
+        <h1>Angler Atlas Gear Store</h1>
+        <p>Premium equipment for serious anglers</p>
+    </section>
+
+    <!-- Cart Toggle -->
+    <button class="cart-toggle-btn" id="cartToggleBtn">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+
+    <!-- Cart Panel -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <aside class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h3><i class="fa-solid fa-cart-shopping"></i> Your Cart</h3>
+            <button class="cart-close-btn" id="cartCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p class="cart-empty">Your cart is empty</p>
+        </div>
+        <div class="cart-footer" id="cartFooter" style="display:none;">
+            <div class="cart-totals">
+                <div class="cart-total-row"><span>Subtotal</span><span id="cartSubtotal">$0.00</span></div>
+                <div class="cart-total-row"><span>Shipping</span><span id="cartShipping">$5.99</span></div>
+                <div class="cart-total-row"><span>Tax (10%)</span><span id="cartTax">$0.00</span></div>
+                <div class="cart-total-row cart-grand-total"><span>Total</span><span id="cartTotal">$0.00</span></div>
+            </div>
+            <button class="btn-checkout" id="checkoutBtn">Checkout</button>
+        </div>
+    </aside>
+
+    <!-- Category Filters -->
+    <div class="store-filters">
+        <button class="filter-btn active" data-category="all">All</button>
+        <button class="filter-btn" data-category="rods">Rods</button>
+        <button class="filter-btn" data-category="reels">Reels</button>
+        <button class="filter-btn" data-category="lures">Lures</button>
+        <button class="filter-btn" data-category="line">Line</button>
+        <button class="filter-btn" data-category="tackle">Tackle</button>
+        <button class="filter-btn" data-category="accessories">Accessories</button>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="store-grid" id="storeGrid">
+        <p class="loading-text" style="grid-column:1/-1; text-align:center;">Loading products...</p>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="search.js"></script>
+    <script src="store.js"></script>
+</body>
+</html>
