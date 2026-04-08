@@ -21,19 +21,19 @@ app.use(cors(corsOptions));
 
 // Rate limiting (disabled in test environment to prevent interference)
 if (process.env.NODE_ENV !== 'test') {
-  // General rate limiter: 100 requests per 15 minutes
+  // General rate limiter: 300 requests per 15 minutes
   app.use('/api/', rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 300,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests, please try again later' },
   }));
 
-  // Stricter rate limiter for auth endpoints: 10 requests per 15 minutes
+  // Stricter rate limiter for auth endpoints: 20 requests per 15 minutes
   app.use('/api/auth/', rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 10,
+    max: 20,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many auth attempts, please try again later' },
