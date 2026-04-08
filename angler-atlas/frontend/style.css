@@ -296,6 +296,76 @@ body {
     gap: 0.4rem;
 }
 
+.weather-extra {
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 1.25rem 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.weather-extra span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.weather-extra i {
+    color: var(--accent);
+    font-size: 0.75rem;
+}
+
+/* ── Marine / Tide widget ────────────────────────────────────────── */
+.marine-data {
+    padding: 0;
+}
+
+.marine-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: background-color var(--transition);
+}
+
+.marine-stat:last-child {
+    border-bottom: none;
+}
+
+.marine-stat:hover {
+    background-color: var(--bg-stat);
+}
+
+.marine-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.marine-label i {
+    color: var(--accent);
+    width: 16px;
+    text-align: center;
+}
+
+.marine-stat strong {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.marine-unavailable {
+    padding: 1.25rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
 /* ── Posts ───────────────────────────────────────────────────────── */
 .post-card {
     background-color: var(--bg-card);

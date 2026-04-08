@@ -67,7 +67,7 @@
                         </div>
                         <div class="input-group">
                             <i class="fa-solid fa-lock input-icon"></i>
-                            <input type="password" id="regPassword" placeholder="Password (min 8 chars)" required>
+                            <input type="password" id="regPassword" placeholder="Password (min 8, 1 uppercase, 1 number)" required>
                         </div>
                         <div class="input-group">
                             <i class="fa-solid fa-lock input-icon"></i>
@@ -92,9 +92,9 @@
             <input type="text" placeholder="Search catches, species, locations…" class="search-input">
         </div>
         <nav class="nav-right">
-            <a href="#" class="nav-item" id="mapLink"><i class="fa-solid fa-map"></i><span>Map</span></a>
-            <a href="#" class="nav-item active" id="feedLink"><i class="fa-solid fa-newspaper"></i><span>Feed</span></a>
-            <a href="#" class="nav-item" id="profileLink"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+            <a href="/map" class="nav-item" id="mapLink"><i class="fa-solid fa-map"></i><span>Map</span></a>
+            <a href="/dashboard" class="nav-item active" id="feedLink"><i class="fa-solid fa-newspaper"></i><span>Feed</span></a>
+            <a href="/profile" class="nav-item" id="profileLink"><i class="fa-solid fa-user"></i><span>Profile</span></a>
             <button id="darkModeToggle" class="icon-btn" title="Toggle dark mode" aria-label="Toggle dark mode">
                 <i class="fa-solid fa-moon"></i>
             </button>
@@ -130,8 +130,35 @@
                     <h3><i class="fa-solid fa-cloud-sun"></i> Weather</h3>
                 </div>
                 <div class="weather-data">
-                    <span class="temp" id="weatherTemp">--°F</span>
-                    <span class="condition" id="weatherCondition"><i class="fa-solid fa-cloud"></i> Loading…</span>
+                    <span class="temp" id="weatherTemp">--°C</span>
+                    <span class="condition" id="weatherCondition"><i class="fa-solid fa-cloud"></i> Loading...</span>
+                </div>
+                <div class="weather-extra" id="weatherExtra" style="display:none;">
+                    <span id="weatherWind"><i class="fa-solid fa-wind"></i> --</span>
+                    <span id="weatherHumidity"><i class="fa-solid fa-droplet"></i> --</span>
+                </div>
+            </div>
+            <div class="widget marine-widget" id="marineWidget" style="display:none;">
+                <div class="widget-header">
+                    <h3><i class="fa-solid fa-water"></i> Tide & Marine</h3>
+                </div>
+                <div id="marineContent" class="marine-data">
+                    <div class="marine-stat">
+                        <span class="marine-label"><i class="fa-solid fa-wave-square"></i> Wave Height</span>
+                        <strong id="marineWaveHeight">--</strong>
+                    </div>
+                    <div class="marine-stat">
+                        <span class="marine-label"><i class="fa-solid fa-clock"></i> Wave Period</span>
+                        <strong id="marineWavePeriod">--</strong>
+                    </div>
+                    <div class="marine-stat">
+                        <span class="marine-label"><i class="fa-solid fa-compass"></i> Direction</span>
+                        <strong id="marineWaveDir">--</strong>
+                    </div>
+                    <div class="marine-stat">
+                        <span class="marine-label"><i class="fa-solid fa-arrow-up"></i> Max Today</span>
+                        <strong id="marineMaxWave">--</strong>
+                    </div>
                 </div>
             </div>
         </aside>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angler Atlas - Map</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="map.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+    <script>
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/';
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+
+    <!-- Navigation -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <i class="fa-solid fa-fish nav-logo"></i>
+            <h1 class="branding">ANGLER ATLAS</h1>
+        </div>
+        <div class="search-bar-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" placeholder="Search catches, species, locations..." class="search-input">
+        </div>
+        <nav class="nav-right">
+            <a href="/map" class="nav-item active" id="mapLink"><i class="fa-solid fa-map"></i><span>Map</span></a>
+            <a href="/dashboard" class="nav-item" id="feedLink"><i class="fa-solid fa-newspaper"></i><span>Feed</span></a>
+            <a href="/profile" class="nav-item" id="profileLink"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+            <button id="darkModeToggle" class="icon-btn" title="Toggle dark mode" aria-label="Toggle dark mode">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button id="logoutBtn" class="icon-btn" title="Logout" aria-label="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Map Container -->
+    <div class="map-page-wrapper">
+        <!-- Search overlay -->
+        <div class="map-search-bar">
+            <i class="fa-solid fa-magnifying-glass-location"></i>
+            <input type="text" id="mapSearchInput" placeholder="Search city or location..." autocomplete="off">
+            <button id="mapSearchBtn" class="map-search-btn">Search</button>
+        </div>
+
+        <!-- Map -->
+        <div id="fullMap"></div>
+
+        <!-- Info box -->
+        <div class="map-info-box" id="mapInfoBox">
+            <i class="fa-solid fa-location-dot"></i>
+            <span id="catchCount">0</span> catches nearby
+        </div>
+
+        <!-- Weather card -->
+        <div class="map-weather-card" id="mapWeatherCard" style="display:none;">
+            <div class="map-weather-icon" id="mapWeatherIcon"><i class="fa-solid fa-cloud"></i></div>
+            <div class="map-weather-temp" id="mapWeatherTemp">--°C</div>
+            <div class="map-weather-cond" id="mapWeatherCond">Loading...</div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="map.js"></script>
+</body>
+</html>
