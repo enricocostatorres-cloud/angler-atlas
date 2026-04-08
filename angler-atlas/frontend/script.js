@@ -138,7 +138,11 @@ function createPostCard(catchData) {
     const imgContainer = document.createElement('div');
     imgContainer.className = 'post-image-container';
     const img = document.createElement('img');
-    img.src = `https://placehold.co/600x360/002f4b/ffffff?text=${encodeURIComponent(catchData.species)}`;
+    if (catchData.images && catchData.images.length > 0) {
+        img.src = catchData.images[0];
+    } else {
+        img.src = `https://placehold.co/600x360/002f4b/ffffff?text=${encodeURIComponent(catchData.species)}`;
+    }
     img.alt = catchData.species;
     img.className = 'post-image';
     img.loading = 'lazy';
@@ -311,6 +315,7 @@ function setupEventListeners() {
 
     // Catch logging form
     document.getElementById('createPostForm')?.addEventListener('submit', handlePostSubmit);
+    setupImagePreview();
 
     // Auth forms
     document.getElementById('loginFormElement')?.addEventListener('submit', handleLogin);
@@ -385,15 +390,57 @@ async function handlePostSubmit(e) {
     };
 
     try {
+        // Upload image first if one is selected
+        const fileInput = document.getElementById('catchImageInput');
+        if (fileInput.files && fileInput.files[0]) {
+            const uploadResult = await uploadCatchImage(fileInput.files[0]);
+            catchData.images = [uploadResult.filePath];
+        }
+
         await logCatch(catchData);
         alert('Catch logged successfully!');
         document.getElementById('postModal').classList.remove('show');
         document.getElementById('createPostForm').reset();
+        clearImagePreview();
         currentPage = 1;
         await loadFeed();
     } catch (error) {
         alert('Error logging catch: ' + error.message);
     }
+}
+
+// Image preview handling
+function setupImagePreview() {
+    const fileInput = document.getElementById('catchImageInput');
+    const removeBtn = document.getElementById('removeImageBtn');
+
+    fileInput?.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            clearImagePreview();
+        }
+    });
+
+    removeBtn?.addEventListener('click', function () {
+        clearImagePreview();
+    });
+}
+
+function clearImagePreview() {
+    const fileInput = document.getElementById('catchImageInput');
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+
+    if (fileInput) fileInput.value = '';
+    if (previewImg) previewImg.src = '';
+    if (preview) preview.style.display = 'none';
 }
 
 // Handle login
