@@ -67,6 +67,10 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
+app.get('/profile', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/profile.html'));
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

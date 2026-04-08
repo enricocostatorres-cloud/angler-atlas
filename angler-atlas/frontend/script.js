@@ -116,7 +116,18 @@ function createPostCard(catchData) {
 
     const avatar = document.createElement('div');
     avatar.className = 'user-avatar';
-    avatar.textContent = initials;
+    if (user.profilePicture) {
+        const avatarImg = document.createElement('img');
+        avatarImg.src = user.profilePicture;
+        avatarImg.alt = user.username;
+        avatarImg.style.width = '100%';
+        avatarImg.style.height = '100%';
+        avatarImg.style.objectFit = 'cover';
+        avatarImg.style.borderRadius = '50%';
+        avatar.appendChild(avatarImg);
+    } else {
+        avatar.textContent = initials;
+    }
 
     const userInfo = document.createElement('div');
     userInfo.style.flex = '1';
@@ -332,7 +343,7 @@ function setupEventListeners() {
 
     document.getElementById('profileLink')?.addEventListener('click', (e) => {
         e.preventDefault();
-        alert('Profile page coming soon!');
+        window.location.href = '/profile';
     });
 
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
