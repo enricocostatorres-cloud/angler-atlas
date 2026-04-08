@@ -325,9 +325,9 @@ async function handleProfilePicUpload(e) {
     if (!file) return;
 
     try {
-        const uploadResult = await uploadCatchImage(file);
+        const uploadResult = await uploadImage(file);
         const updated = await updateUserProfile(currentUser._id, {
-            profilePicture: uploadResult.filePath,
+            profilePicture: uploadResult.url,
         });
         currentUser = { ...currentUser, ...updated };
         renderProfileHeader(currentUser);

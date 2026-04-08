@@ -56,6 +56,7 @@ app.use('/api/posts', require('./routes/posts'));
 app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/store', require('./routes/store'));
 app.use('/api/search', require('./routes/search'));
+app.use('/api/uploads', require('./routes/uploads'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -81,6 +82,10 @@ app.get('/map', (req, res) => {
 
 app.get('/store', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/store.html'));
+});
+
+app.get('/settings', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/settings.html'));
 });
 
 // 404 handler

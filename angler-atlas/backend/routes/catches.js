@@ -1,22 +1,13 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
 const Catch = require('../models/Catch');
+const Image = require('../models/Image');
 const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Multer configuration for catch image uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads'));
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `catch-${uniqueSuffix}${ext}`);
-  },
-});
+// Multer memory storage — images stored in MongoDB, not on disk
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -43,9 +34,9 @@ function parseCoords(latitude, longitude) {
   return { lat, lng };
 }
 
-// Upload a catch image
+// Upload a catch image — now stores in MongoDB
 router.post('/upload', verifyToken, (req, res, next) => {
-  upload.single('catchImage')(req, res, (err) => {
+  upload.single('catchImage')(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({ error: 'File too large. Maximum size is 5MB.' });
@@ -58,7 +49,21 @@ router.post('/upload', verifyToken, (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No image file provided' });
     }
-    res.json({ filePath: `/uploads/${req.file.filename}` });
+
+    try {
+      const base64Data = req.file.buffer.toString('base64');
+      const image = new Image({
+        userId: req.userId,
+        data: base64Data,
+        contentType: req.file.mimetype,
+        filename: req.file.originalname,
+      });
+      await image.save();
+
+      res.json({ filePath: `/api/uploads/image/${image._id}` });
+    } catch (error) {
+      next(error);
+    }
   });
 });
 

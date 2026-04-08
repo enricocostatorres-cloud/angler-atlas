@@ -111,6 +111,19 @@ async function uploadCatchImage(file) {
     return handleResponse(response);
 }
 
+async function uploadImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await fetch(`${API_BASE_URL}/uploads/image`, {
+        method: 'POST',
+        headers: {
+            ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+        },
+        body: formData,
+    });
+    return handleResponse(response);
+}
+
 async function getFeed(page = 1) {
     try {
         const response = await fetch(`${API_BASE_URL}/catches/feed?page=${page}`);
@@ -209,6 +222,15 @@ async function searchAPI(query) {
         console.error('Error searching:', error);
         return { users: [], catches: [] };
     }
+}
+
+// Delete account
+async function deleteAccount(userId) {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
 }
 
 // Follow Functions
